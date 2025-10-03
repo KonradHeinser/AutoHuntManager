@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+      <AutoHuntHeaderTooltipLabel>The animal to be automatically hunted.</AutoHuntHeaderTooltipLabel>
+      <AutoHuntHeaderTooltipCurrentTotal>The current number of wild animals, both male and female.</AutoHuntHeaderTooltipCurrentTotal>
+      <AutoHuntHeaderTooltipMaxTotal>The maximum number of wild animals, both male and female.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxTotal>
+      <AutoHuntHeaderTooltipCurrentMales>The current number of wild males of breeding age.</AutoHuntHeaderTooltipCurrentMales>
+      <AutoHuntHeaderTooltipCurrentMalesYoung>The current number of wild baby and juvenile males.</AutoHuntHeaderTooltipCurrentMalesYoung>
+      <AutoHuntHeaderTooltipMaxMales>The maximum number of wild males of breeding age.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxMales>
+      <AutoHuntHeaderTooltipMaxMalesYoung>The maximum number of wild baby and juvenile males.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxMalesYoung>
+      <AutoHuntHeaderTooltipCurrentFemales>The current number of wild females of breeding age.</AutoHuntHeaderTooltipCurrentFemales>
+      <AutoHuntHeaderTooltipCurrentFemalesYoung>The current number of wild baby and juvenile females.</AutoHuntHeaderTooltipCurrentFemalesYoung>
+      <AutoHuntHeaderTooltipMaxFemales>The maximum number of wild females.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxFemales>
+      <AutoHuntHeaderTooltipMaxFemalesYoung>The maximum number of wild baby and juvenile females.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxFemalesYoung>
+      <AutoHuntHeaderTooltipCurrentPregnant>The current number of wild pregnant animals.</AutoHuntHeaderTooltipCurrentPregnant>
+      <AutoHuntHeaderTooltipAllowHuntPregnant>Allow pregnant animals to be Hunted along with other females of the same species.</AutoHuntHeaderTooltipAllowHuntPregnant>
+      <AutoHuntTooltipSetLimit>Click to set an animal count limit.</AutoHuntTooltipSetLimit>
+</LanguageData>
+
