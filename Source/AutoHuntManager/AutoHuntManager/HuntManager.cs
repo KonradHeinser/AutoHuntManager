@@ -22,13 +22,15 @@ namespace AutoHuntManager
         protected bool paused = false;
         protected bool insectsAllow = false;
         protected bool humanlikeAllow = false;
+        protected bool twistedAllow = false;
         protected bool saveConfigOnMapDestroy = true;
         protected List<Pawn> animalsToHuntCached = new List<Pawn>();
-        protected List<AutoSlaughterConfig> configs = new List<AutoSlaughterConfig>();
+        protected List<Pawn> forcedAnimalsToHuntCached = new List<Pawn>();
+        public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
         protected bool cacheDirty;
-        protected float nutritionTarget = 5f;
+        protected float nutritionTarget = 999f;
 
-        protected static List<AutoSlaughterConfig> savedConfigs = new List<AutoSlaughterConfig>();
+        protected static List<AutoHuntConfig> savedConfigs = new List<AutoHuntConfig>();
         protected static bool savedInsectsAllow = false;
         protected bool savedHumanlikeAllow = false;
         protected List<Thing> forbiddenThings = new List<Thing>();
@@ -38,137 +40,165 @@ namespace AutoHuntManager
         {
         }
 
+        public void CheckAnimals() // Builds the two lists
+        {
+            if (cacheDirty)
+            {
+                try
+                {
+                    animalsToHuntCached.Clear();
+                    forcedAnimalsToHuntCached.Clear();
+                    var animals = map.mapPawns.AllPawnsSpawned.Where(a => CanEverAutoHunt(a));
+                    if (animals.EnumerableNullOrEmpty())
+                        return;
+
+                    foreach (AutoHuntConfig config in configs)
+                    {
+                        if (!config.AnyLimit)
+                            continue;
+
+                        tmpAnimals.Clear();
+                        tmpAnimalsMale.Clear();
+                        tmpAnimalsMaleYoung.Clear();
+                        tmpAnimalsFemale.Clear();
+                        tmpAnimalsFemaleYoung.Clear();
+                        tmpAnimalsPregnant.Clear();
+                        foreach (Pawn spawnedAnimal in animals)
+                        {
+                            if (spawnedAnimal.def != config.animal)
+                                continue;
+
+                            if (spawnedAnimal.gender == Gender.Male)
+                                if (spawnedAnimal.ageTracker.CurLifeStage.reproductive)
+                                    tmpAnimalsMale.Add(spawnedAnimal);
+                                else
+                                    tmpAnimalsMaleYoung.Add(spawnedAnimal);
+                            else if (spawnedAnimal.gender == Gender.Female)
+                                if (spawnedAnimal.ageTracker.CurLifeStage.reproductive)
+                                {
+                                    if (!spawnedAnimal.health.hediffSet.HasHediff(HediffDefOf.Pregnant))
+                                        tmpAnimalsFemale.Add(spawnedAnimal);
+                                    else if (config.allowHuntPregnant)
+                                    {
+                                        tmpAnimalsPregnant.Add(spawnedAnimal);
+                                        continue;
+                                    }
+                                }
+                                else
+                                    tmpAnimalsFemaleYoung.Add(spawnedAnimal);
+                            tmpAnimals.Add(spawnedAnimal);
+                        }
+
+                        tmpAnimals.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
+                        tmpAnimalsMale.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
+                        tmpAnimalsMaleYoung.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
+                        tmpAnimalsFemale.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
+                        tmpAnimalsFemaleYoung.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
+                        if (config.allowHuntPregnant)
+                        {
+                            tmpAnimalsPregnant.SortByDescending(a => a.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant).Severity);
+                            tmpAnimalsFemale.AddRange(tmpAnimalsPregnant);
+                            tmpAnimals.AddRange(tmpAnimalsPregnant);
+                        }
+
+                        if (config.maxFemales != -1)
+                        {
+                            while (tmpAnimalsFemale.Count > config.maxFemales)
+                            {
+                                Pawn a = tmpAnimalsFemale.PopFront();
+                                tmpAnimals.Remove(a);
+                                if (config.forceHunt)
+                                    forcedAnimalsToHuntCached.Add(a);
+                                else
+                                    animalsToHuntCached.Add(a);
+                            }
+                        }
+
+                        if (config.maxFemalesYoung != -1)
+                            while (tmpAnimalsFemaleYoung.Count > config.maxFemalesYoung)
+                            {
+                                Pawn a = tmpAnimalsFemaleYoung.PopFront();
+                                tmpAnimals.Remove(a);
+                                if (config.forceHunt)
+                                    forcedAnimalsToHuntCached.Add(a);
+                                else
+                                    animalsToHuntCached.Add(a);
+                            }
+
+                        if (config.maxMales != -1)
+                            while (tmpAnimalsMale.Count > config.maxMales)
+                            {
+                                Pawn a = tmpAnimalsMale.PopFront();
+                                tmpAnimals.Remove(a);
+                                if (config.forceHunt)
+                                    forcedAnimalsToHuntCached.Add(a);
+                                else
+                                    animalsToHuntCached.Add(a);
+                            }
+
+                        if (config.maxMalesYoung != -1)
+                            while (tmpAnimalsMaleYoung.Count > config.maxMalesYoung)
+                            {
+                                Pawn a = tmpAnimalsMaleYoung.PopFront();
+                                tmpAnimals.Remove(a);
+                                if (config.forceHunt)
+                                    forcedAnimalsToHuntCached.Add(a);
+                                else
+                                    animalsToHuntCached.Add(a);
+                            }
+
+                        if (config.maxTotal == -1)
+                            continue;
+
+                        while (tmpAnimals.Count > config.maxTotal)
+                        {
+                            Pawn pawn = tmpAnimals.PopFront();
+                            if (pawn.gender == Gender.Male)
+                                if (pawn.ageTracker.CurLifeStage.reproductive)
+                                    tmpAnimalsMale.Remove(pawn);
+                                else
+                                    tmpAnimalsMaleYoung.Remove(pawn);
+                            else if (pawn.gender == Gender.Female)
+                                if (pawn.ageTracker.CurLifeStage.reproductive)
+                                    tmpAnimalsFemale.Remove(pawn);
+                                else
+                                    tmpAnimalsFemaleYoung.Remove(pawn);
+
+                            if (config.forceHunt)
+                                forcedAnimalsToHuntCached.Add(pawn);
+                            else
+                                animalsToHuntCached.Add(pawn);
+                        }
+                    }
+
+                    cacheDirty = false;
+                }
+                finally
+                {
+                    tmpAnimals.Clear();
+                    tmpAnimalsMale.Clear();
+                    tmpAnimalsFemale.Clear();
+                    tmpAnimalsMaleYoung.Clear();
+                    tmpAnimalsFemaleYoung.Clear();
+                    tmpAnimalsPregnant.Clear();
+                }
+            }
+        }
+
+        public List<Pawn> ForcedAnimalsToHunt
+        {
+            get
+            {
+                CheckAnimals();
+                return forcedAnimalsToHuntCached;
+            }
+        }
+
         public List<Pawn> AnimalsToHunt
         {
             get
             {
-                if (cacheDirty)
-                {
-                    try
-                    {
-                        animalsToHuntCached.Clear();
-
-                        var animals = map.mapPawns.AllPawnsSpawned.Where(a => CanEverAutoHunt(a));
-                        if (animals.EnumerableNullOrEmpty())
-                            return animalsToHuntCached;
-
-                        foreach (AutoSlaughterConfig config in configs)
-                        {
-                            if (!config.AnyLimit)
-                                continue;
-
-                            tmpAnimals.Clear();
-                            tmpAnimalsMale.Clear();
-                            tmpAnimalsMaleYoung.Clear();
-                            tmpAnimalsFemale.Clear();
-                            tmpAnimalsFemaleYoung.Clear();
-                            tmpAnimalsPregnant.Clear();
-                            foreach (Pawn spawnedAnimal in animals)
-                            {
-                                if (spawnedAnimal.def != config.animal)
-                                    continue;
-
-                                if (spawnedAnimal.gender == Gender.Male)
-                                    if (spawnedAnimal.ageTracker.CurLifeStage.reproductive)
-                                        tmpAnimalsMale.Add(spawnedAnimal);
-                                    else
-                                        tmpAnimalsMaleYoung.Add(spawnedAnimal);
-                                else if (spawnedAnimal.gender == Gender.Female)
-                                    if (spawnedAnimal.ageTracker.CurLifeStage.reproductive)
-                                    {
-                                        if (!spawnedAnimal.health.hediffSet.HasHediff(HediffDefOf.Pregnant))
-                                            tmpAnimalsFemale.Add(spawnedAnimal);
-                                        else if (config.allowSlaughterPregnant)
-                                        {
-                                            tmpAnimalsPregnant.Add(spawnedAnimal);
-                                            continue;
-                                        }
-                                    }
-                                    else
-                                        tmpAnimalsFemaleYoung.Add(spawnedAnimal);
-                                tmpAnimals.Add(spawnedAnimal);
-                            }
-
-                            tmpAnimals.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
-                            tmpAnimalsMale.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
-                            tmpAnimalsMaleYoung.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
-                            tmpAnimalsFemale.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
-                            tmpAnimalsFemaleYoung.SortByDescending(a => a.ageTracker.AgeBiologicalTicks);
-                            if (config.allowSlaughterPregnant)
-                            {
-                                tmpAnimalsPregnant.SortByDescending(a => a.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant).Severity);
-                                tmpAnimalsFemale.AddRange(tmpAnimalsPregnant);
-                                tmpAnimals.AddRange(tmpAnimalsPregnant);
-                            }
-
-                            if (config.maxFemales != -1)
-                            {
-                                while (tmpAnimalsFemale.Count > config.maxFemales)
-                                {
-                                    Pawn item = tmpAnimalsFemale.PopFront();
-                                    tmpAnimals.Remove(item);
-                                    animalsToHuntCached.Add(item);
-                                }
-                            }
-
-                            if (config.maxFemalesYoung != -1)
-                                while (tmpAnimalsFemaleYoung.Count > config.maxFemalesYoung)
-                                {
-                                    Pawn item2 = tmpAnimalsFemaleYoung.PopFront();
-                                    tmpAnimals.Remove(item2);
-                                    animalsToHuntCached.Add(item2);
-                                }
-
-                            if (config.maxMales != -1)
-                                while (tmpAnimalsMale.Count > config.maxMales)
-                                {
-                                    Pawn item3 = tmpAnimalsMale.PopFront();
-                                    tmpAnimals.Remove(item3);
-                                    animalsToHuntCached.Add(item3);
-                                }
-
-                            if (config.maxMalesYoung != -1)
-                                while (tmpAnimalsMaleYoung.Count > config.maxMalesYoung)
-                                {
-                                    Pawn item4 = tmpAnimalsMaleYoung.PopFront();
-                                    tmpAnimals.Remove(item4);
-                                    animalsToHuntCached.Add(item4);
-                                }
-
-                            if (config.maxTotal == -1)
-                                continue;
-
-                            while (tmpAnimals.Count > config.maxTotal)
-                            {
-                                Pawn pawn = tmpAnimals.PopFront();
-                                if (pawn.gender == Gender.Male)
-                                    if (pawn.ageTracker.CurLifeStage.reproductive)
-                                        tmpAnimalsMale.Remove(pawn);
-                                    else
-                                        tmpAnimalsMaleYoung.Remove(pawn);
-                                else if (pawn.gender == Gender.Female)
-                                    if (pawn.ageTracker.CurLifeStage.reproductive)
-                                        tmpAnimalsFemale.Remove(pawn);
-                                    else
-                                        tmpAnimalsFemaleYoung.Remove(pawn);
-
-                                animalsToHuntCached.Add(pawn);
-                            }
-                        }
-
-                        cacheDirty = false;
-                    }
-                    finally
-                    {
-                        tmpAnimals.Clear();
-                        tmpAnimalsMale.Clear();
-                        tmpAnimalsFemale.Clear();
-                        tmpAnimalsMaleYoung.Clear();
-                        tmpAnimalsFemaleYoung.Clear();
-                        tmpAnimalsPregnant.Clear();
-                    }
-                }
-
+                CheckAnimals();
                 return animalsToHuntCached;
             }
         }
@@ -178,7 +208,7 @@ namespace AutoHuntManager
             forbiddenThings.Clear();
         }
 
-        protected bool CanEverAutoHunt(Pawn animal)
+        public bool CanEverAutoHunt(Pawn animal)
         {
             return animal.IsAnimal && map.designationManager.DesignationOn(animal) == null &&
                 (animal.Faction == null || animal.Faction.def == FactionDefOf.Insect) && 
@@ -218,7 +248,7 @@ namespace AutoHuntManager
             HashSet<ThingDef> hashSet = new HashSet<ThingDef>(configs.Select(c => c.animal));
             foreach (ThingDef allDef in DefDatabase<ThingDef>.AllDefs)
                 if (allDef.race != null && allDef.race.Animal && !allDef.race.Dryad && !allDef.IsCorpse && !hashSet.Contains(allDef))
-                    configs.Add(new AutoSlaughterConfig
+                    configs.Add(new AutoHuntConfig
                     {
                         animal = allDef
                     });
@@ -233,50 +263,77 @@ namespace AutoHuntManager
 
         protected void SaveConfigs()
         {
-            savedConfigs = new List<AutoSlaughterConfig>(configs);
+            savedConfigs = new List<AutoHuntConfig>(configs);
             savedHumanlikeAllow = humanlikeAllow;
             savedInsectsAllow = insectsAllow;
         }
 
         protected void LoadConfigs()
         {
-            configs = new List<AutoSlaughterConfig>(savedConfigs);
+            configs = new List<AutoHuntConfig>(savedConfigs);
             humanlikeAllow = savedHumanlikeAllow;
             insectsAllow = savedInsectsAllow;
         }
 
         protected void ResetConfigs()
         {
-            configs = new List<AutoSlaughterConfig>();
+            configs = new List<AutoHuntConfig>();
             TryPopulateMissingAnimals();
         }
 
         public override void MapComponentTick()
         {
             base.MapComponentTick();
-            if (!paused && GenTicks.IsTickInterval(map.GetHashCode(), 10000))
+            if (!paused && GenTicks.IsTickInterval(map.GetHashCode(), 15000))
                 DesignateHunting();
+        }
+
+        public void PauseToggle()
+        {
+            paused = !paused;
+        }
+
+        public void Notify_ConfigChanged()
+        {
+            cacheDirty = true;
         }
 
         public void DesignateHunting()
         {
+            cacheDirty = true; // Dirty the cache so we can regenerate the list
+            float num = 0f; // Nutrition recorded
+
+            var hunting = map.mapPawns.AllPawnsSpawned.Where(a => a.IsAnimal && ValidPrey(a) &&
+                map.designationManager.DesignationOn(a)?.def == DesignationDefOf.Hunt);
+
+            if (!hunting.EnumerableNullOrEmpty())
+                foreach (var animal in hunting)
+                    num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+
+            // See if there are any animals we absolutely need to hunt no matter what
+            if (!ForcedAnimalsToHunt.NullOrEmpty())
+                foreach (var animal in ForcedAnimalsToHunt)
+                {
+                    map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
+                    if (ValidPrey(animal))
+                        num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+                    forbiddenHunts.Add(animal);
+                }
+
+            // If existing hunts are enough to put us above the target, don't bother checking anything else
+            if (num >= nutritionTarget)
+                return;
+
             // If the map doesn't generally support wild animals, then the player is on their own
             if (!map.Biome.wildAnimalsCanWanderInto)
-                return;
-            
-            // If anything is already being hunted, let that continue before rethinking things
-            if (!map.mapPawns.AllPawnsSpawned.Where(a => a.IsAnimal && map.designationManager.DesignationOn(a)?.def == DesignationDefOf.Hunt).EnumerableNullOrEmpty())
                 return;
 
             if (!forbiddenThings.NullOrEmpty())
                 forbiddenThings.RemoveWhere(t => t == null || t.Destroyed);
 
-            float num = 0f; // Stored nutrition
-
-            // Locate all the viable meat that we haven't already attempted to claim
-            var rawMeat = map.listerThings.GetAllThings(f => !forbiddenThings.Contains(f) && f.def.IsMeat
-                && (humanlikeAllow || !FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(f))
-                && (insectsAllow || FoodUtility.IsInsectCorpseOrInsectMeatIngredient(f)));
+            // Locate all the viable meat
+            var rawMeat = map.listerThings.GetAllThings(f => f.def.IsMeat && ValidFood(f) &&
+                (twistedAllow || !ModsConfig.AnomalyActive || f.def != ThingDefOf.Meat_Twisted));
 
             // Start with counting all the meat laying around claimed because it's the easiest to handle
             var availableMeat = rawMeat.Where(m => !m.IsForbidden(Faction.OfPlayer));
@@ -288,11 +345,10 @@ namespace AutoHuntManager
                         return;
                 }
 
-            // Locate all viable corpses that we haven't tried to claim
-            var corpses = map.listerThings.GetAllThings(f => !forbiddenThings.Contains(f) &&
-                f is Corpse c && c.InnerPawn.RaceProps.IsFlesh
-                && (humanlikeAllow || !FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(f))
-                && (insectsAllow || FoodUtility.IsInsectCorpseOrInsectMeatIngredient(f)));
+            // Locate all viable corpses
+            var corpses = map.listerThings.GetAllThings(f => f is Corpse c && 
+                c.InnerPawn.RaceProps.IsFlesh && ValidFood(f) &&
+                (twistedAllow || !c.InnerPawn.RaceProps.IsAnomalyEntity));
 
             // Check for claimed corpses that may be waiting for butchery
             var availableCorpses = corpses.Where(c => !c.IsForbidden(Faction.OfPlayer));
@@ -305,8 +361,8 @@ namespace AutoHuntManager
                         return;
                 }
 
-            // Check for unclaimed meat to take
-            var unclaimedMeat = rawMeat.Where(m => m.IsForbidden(Faction.OfPlayer));
+            // Check for new unclaimed meat to take
+            var unclaimedMeat = rawMeat.Where(m => m.IsForbidden(Faction.OfPlayer) && !forbiddenThings.Contains(m));
             if (!unclaimedMeat.EnumerableNullOrEmpty())
                 foreach (var meat in unclaimedMeat)
                 {
@@ -317,8 +373,8 @@ namespace AutoHuntManager
                         return;
                 }
 
-            // Check for unclaimed corpses that can be claimed
-            var unclaimedCorpses = corpses.Where(c => c.IsForbidden(Faction.OfPlayer));
+            // Check for new unclaimed corpses that can be claimed
+            var unclaimedCorpses = corpses.Where(c => c.IsForbidden(Faction.OfPlayer) && !forbiddenThings.Contains(c));
             if (!unclaimedCorpses.EnumerableNullOrEmpty())
                 foreach (var thing in unclaimedCorpses)
                 {
@@ -330,57 +386,92 @@ namespace AutoHuntManager
                         return;
                 }
 
-            cacheDirty = true; // Dirty the cache at this point so we can regenerate the list
-
             if (!AnimalsToHunt.NullOrEmpty())
             {
+                // Categorize animals based on chance to fight back
+                var safeAnimals = new List<Pawn>();
+                var safishAnimals = new List<Pawn>();
+                var unsafeAnimals = new List<Pawn>();
+                var dangerousAnimals = new List<Pawn>();
+
+                foreach (var a in AnimalsToHunt)
+                {
+                    if (a.RaceProps.manhunterOnDamageChance <= 0)
+                        safeAnimals.Add(a);
+                    else if (a.RaceProps.manhunterOnDamageChance < 0.1f)
+                        safishAnimals.Add(a);
+                    else if (a.RaceProps.manhunterOnDamageChance < 0.5f)
+                        unsafeAnimals.Add(a);
+                    else
+                        dangerousAnimals.Add(a);
+                }
                 // Start with animals that are unlikely to cause issues
-                var safeAnimals = AnimalsToHunt.Where(a => a.RaceProps.manhunterOnDamageChance <= 0);
                 if (!safeAnimals.EnumerableNullOrEmpty())
                     foreach (var animal in safeAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
                         forbiddenHunts.Add(animal);
-                        if (num >= nutritionTarget)
-                            return;
+                        if (ValidPrey(animal))
+                        {
+                            num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+                            if (num >= nutritionTarget)
+                                return;
+                        }
                     }
 
                 // Target animals that might be dangerous, but are probably fine
-                var safishAnimals = AnimalsToHunt.Where(a => a.RaceProps.manhunterOnDamageChance > 0f && a.RaceProps.manhunterOnDamageChance < 0.1f);
                 if (!safishAnimals.EnumerableNullOrEmpty())
                     foreach (var animal in safishAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
                         forbiddenHunts.Add(animal);
-                        if (num >= nutritionTarget)
-                            return;
+                        if (ValidPrey(animal))
+                        {
+                            num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+                            if (num >= nutritionTarget)
+                                return;
+                        }
                     }
 
                 // Find animals that have a decent chance to be a problem, but probably aren't big predators
-                var unsafeAnimals = AnimalsToHunt.Where(a => a.RaceProps.manhunterOnDamageChance >= 0.1f && a.RaceProps.manhunterOnDamageChance < 0.5f);
                 if (!unsafeAnimals.EnumerableNullOrEmpty())
                     foreach (var animal in unsafeAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
                         forbiddenHunts.Add(animal);
-                        if (num >= nutritionTarget)
-                            return;
+                        if (ValidPrey(animal))
+                        {
+                            num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+                            if (num >= nutritionTarget)
+                                return;
+                        }
                     }
 
                 // Give up and see if there's big animals to attack
-                var dangerousAnimals = AnimalsToHunt.Where(a => a.RaceProps.manhunterOnDamageChance >= 0.5f);
                 if (!dangerousAnimals.EnumerableNullOrEmpty())
                     foreach (var animal in dangerousAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
                         forbiddenHunts.Add(animal);
-                        if (num >= nutritionTarget)
-                            return;
+                        if (ValidPrey(animal))
+                        {
+                            num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+                            if (num >= nutritionTarget)
+                                return;
+                        }
                     }
+            }
+
+            bool ValidPrey(Pawn a)
+            {
+                return (humanlikeAllow || !a.RaceProps.Humanlike) &&
+                    (insectsAllow || !a.RaceProps.Insect);
+            }
+
+            bool ValidFood(Thing t)
+            {
+                return (humanlikeAllow || !FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(t))
+                    && (insectsAllow || !FoodUtility.IsInsectCorpseOrInsectMeatIngredient(t));
             }
         }
     }

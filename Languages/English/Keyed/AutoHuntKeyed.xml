@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
+      <ForceAutoHunt>Ignore Nutrition</ForceAutoHunt>
+      <AutoHuntHeaderTooltipForceHunt>Cause this animal to be hunted down to the specified limits, regardless of current nutrition levels and target.\n\nThis may cause other auto hunted animals to be hunted less depending on food needed, but if the nutrition level is set high enough this setting does nothing.</AutoHuntHeaderTooltipForceHunt>
+      <AllowHunt>Hunt</AllowHunt>
       <AutoHuntHeaderTooltipLabel>The animal to be automatically hunted.</AutoHuntHeaderTooltipLabel>
       <AutoHuntHeaderTooltipCurrentTotal>The current number of wild animals, both male and female.</AutoHuntHeaderTooltipCurrentTotal>
       <AutoHuntHeaderTooltipMaxTotal>The maximum number of wild animals, both male and female.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxTotal>
