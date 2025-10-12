@@ -117,7 +117,7 @@ namespace AutoHuntManager
 
             listing_Standard.End();
             Widgets.EndScrollView();
-            Rect rect3 = new Rect(inRect.x + inRect.width / 2f + Window.CloseButSize.x / 2f + 10f, inRect.y + inRect.height - 35f, 395f, 50f)
+            Rect rect3 = new Rect(inRect.x + inRect.width / 2f + CloseButSize.x / 2f + 10f, inRect.y + inRect.height - 35f, 395f, 50f)
             {
                 yMax = inRect.yMax,
                 xMax = inRect.xMax
@@ -129,11 +129,11 @@ namespace AutoHuntManager
             GUI.color = Color.gray;
             Text.Font = GameFont.Tiny;
             if (Text.TinyFontSupported)
-                Widgets.Label(rect3, "AutoSlaugtherTip".Translate());
+                Widgets.Label(rect3, "AutoHuntTip".Translate());
             else
             {
-                Widgets.Label(rect3, "AutoSlaugtherTip".Translate().Truncate(rect3.width));
-                TooltipHandler.TipRegion(rect3, "AutoSlaugtherTip".Translate());
+                Widgets.Label(rect3, "AutoHuntTip".Translate().Truncate(rect3.width));
+                TooltipHandler.TipRegion(rect3, "AutoHuntTip".Translate());
             }
 
             Text.Font = font;
@@ -270,7 +270,11 @@ namespace AutoHuntManager
             AddCurrentAndMaxEntries("AnimalFemaleAdult");
             AddCurrentAndMaxEntries("AnimalFemaleYoung");
             AddCurrentAndMaxEntries("AnimalPregnant", 0f, 16f);
+            float forceXStart = row.FinalX;
             row.Label("ForceAutoHunt".Translate(), 56f, "AutoHuntHeaderTooltipForceHunt".Translate());
+            Rect item2 = new Rect(startX, rect1.height, row.FinalX - forceXStart, rect2.height);
+            tmpMouseoverHighlightRects.Add(item2);
+            tmpGroupRects.Add(item2);
 
             Text.Anchor = anchor;
             Widgets.EndGroup();
