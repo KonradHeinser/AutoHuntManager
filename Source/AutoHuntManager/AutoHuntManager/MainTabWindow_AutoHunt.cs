@@ -264,7 +264,7 @@ namespace AutoHuntManager
             Rect item = new Rect(startX, rect1.height, row.FinalX - startX, rect2.height);
             tmpMouseoverHighlightRects.Add(item);
             tmpGroupRects.Add(item);
-            AddCurrentAndMaxEntries("AutoSlaughterHeaderColTotal");
+            AddCurrentAndMaxEntries("AutoSlaugtherHeaderColTotal");
             AddCurrentAndMaxEntries("AnimalMaleAdult");
             AddCurrentAndMaxEntries("AnimalMaleYoung");
             AddCurrentAndMaxEntries("AnimalFemaleAdult");
