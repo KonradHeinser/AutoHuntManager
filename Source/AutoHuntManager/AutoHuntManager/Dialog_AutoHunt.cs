@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Xml;
 using RimWorld;
 using UnityEngine;
 using Verse;
-using Verse.AI;
 using Verse.Sound;
 
 namespace AutoHuntManager
@@ -292,7 +288,6 @@ namespace AutoHuntManager
             TextAnchor anchor2 = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             widgetRow.Label(string.Empty, 24f);
-            widgetRow.Label("ForceAutoHunt".Translate(), 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             widgetRow.Label("AutoHuntHeaderColLabel".Translate(), width, "AutoHuntHeaderTooltipLabel".Translate());
             widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentTotal".Translate());
             widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxTotal".Translate());
@@ -306,6 +301,7 @@ namespace AutoHuntManager
             widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
             widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
             widgetRow.Label("AllowHunt".Translate(), 72f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
+            widgetRow.Label("ForceAutoHunt".Translate(), 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Text.Anchor = anchor2;
             Widgets.EndGroup();
             GUI.color = Color.gray;
@@ -358,6 +354,8 @@ namespace AutoHuntManager
             Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, 24f, disabled: false, paintable: true);
             if (allowHuntPregnant != config.allowHuntPregnant)
                 RecalculateAnimals();
+            row.Gap(26f);
+            Widgets.Checkbox(row.FinalX, 0f, ref config.forceHunt, 24f, disabled: false, paintable: true);
 
             row.Gap(52f);
             Text.Anchor = (TextAnchor)0;

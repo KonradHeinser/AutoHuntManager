@@ -34,14 +34,10 @@
     <Compile Include="AutoHuntConfig.cs" />
     <Compile Include="Dialog_AutoHunt.cs" />
     <Compile Include="HuntManager.cs" />
-    <Compile Include="MainTabWindow_AutoHunt.cs" />
+    <None Include="MainTabWindow_AutoHunt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\..\..\..\..\..\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
