@@ -34,7 +34,7 @@
     <Compile Include="AutoHuntConfig.cs" />
     <Compile Include="Dialog_AutoHunt.cs" />
     <Compile Include="HuntManager.cs" />
-    <None Include="MainTabWindow_AutoHunt.cs" />
+    <Compile Include="MainTabWindow_AutoHunt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
