@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-      <AutoHuntTip>Non-pregnant animals will be chosen first from oldest to youngest, followed by pregnant animals from least to most progressed. Potential nutrition from existing and forced hunts, along with all locatable raw meat and corpses, are taken into account before any other hunting is considered.</AutoHuntTip>
+      <AutoHuntTip>Non-pregnant animals will be chosen first from oldest to youngest, followed by pregnant animals from least to most progressed.</AutoHuntTip>
       <ForceAutoHunt>Forced</ForceAutoHunt>
       <AutoHuntHeaderTooltipForceHunt>Cause this animal to be hunted down to the specified limits, regardless of current nutrition levels and target.\n\nThis may cause other auto hunted animals to be hunted less depending on food needed, but if the nutrition level is set high enough this setting does nothing.</AutoHuntHeaderTooltipForceHunt>
       <AllowHunt>Hunt</AllowHunt>

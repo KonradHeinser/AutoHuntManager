@@ -65,6 +65,8 @@ namespace AutoHuntManager
             base.PostOpen();
             if (Manager != null)
                 RecalculateAnimals();
+            else
+                Log.Message("No manager");
         }
 
         private void RecalculateAnimals()
@@ -75,6 +77,7 @@ namespace AutoHuntManager
                 AnimalCountRecord value = default;
                 CountAnimals(Find.CurrentMap, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
+                Log.Message(config.animal.LabelCap);
             }
 
             configsOrdered = (from c in Manager.configs
@@ -180,7 +183,7 @@ namespace AutoHuntManager
         private float CalculateLabelWidth(Rect rect)
         {
             float num = 64f;
-            return rect.width - 24f - 4f - 4f - num * 7f - 420f - 32f;
+            return rect.width - num * 7f - 420f - 32f;
         }
 
         private void DoMaxColumn(WidgetRow row, ref int val, ref string buffer, int current)
