@@ -264,12 +264,14 @@ namespace AutoHuntManager
             Rect item = new Rect(startX, rect1.height, row.FinalX - startX, rect2.height);
             tmpMouseoverHighlightRects.Add(item);
             tmpGroupRects.Add(item);
-            AddCurrentAndMaxEntries("AutoHuntHeaderColTotal");
+            AddCurrentAndMaxEntries("AutoSlaughterHeaderColTotal");
             AddCurrentAndMaxEntries("AnimalMaleAdult");
             AddCurrentAndMaxEntries("AnimalMaleYoung");
             AddCurrentAndMaxEntries("AnimalFemaleAdult");
             AddCurrentAndMaxEntries("AnimalFemaleYoung");
             AddCurrentAndMaxEntries("AnimalPregnant", 0f, 16f);
+            row.Label("ForceAutoHunt".Translate(), 56f, "AutoHuntHeaderTooltipForceHunt".Translate());
+
             Text.Anchor = anchor;
             Widgets.EndGroup();
             Widgets.BeginGroup(rect2);
