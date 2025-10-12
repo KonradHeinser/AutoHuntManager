@@ -265,7 +265,10 @@ namespace AutoHuntManager
 
         protected void LoadConfigs()
         {
-            configs = new List<AutoHuntConfig>(savedConfigs);
+            if (savedConfigs.NullOrEmpty())
+                TryPopulateMissingAnimals();
+            else
+                configs = new List<AutoHuntConfig>(savedConfigs);
             humanlikeAllow = savedHumanlikeAllow;
             insectsAllow = savedInsectsAllow;
         }

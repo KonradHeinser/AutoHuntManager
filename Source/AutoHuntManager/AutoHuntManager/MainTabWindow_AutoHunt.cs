@@ -71,6 +71,7 @@ namespace AutoHuntManager
 
         private void RecalculateAnimals()
         {
+            Log.Message("Recalculating Animals");
             animalCounts.Clear();
             foreach (AutoHuntConfig config in Manager.configs)
             {
@@ -79,7 +80,7 @@ namespace AutoHuntManager
                 animalCounts.Add(config.animal, value);
                 Log.Message(config.animal.LabelCap);
             }
-
+            Log.Message($"Found {Manager.configs.Count} animals");
             configsOrdered = (from c in Manager.configs
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
