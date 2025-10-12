@@ -58,7 +58,7 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
-        public override Vector2 RequestedTabSize => new Vector2(1050f, 600f);
+        public override Vector2 RequestedTabSize => new Vector2(1050f, Mathf.Min(animalCounts.Count * 30f + 200f,UI.screenHeight));
 
         public override void PostOpen()
         {
@@ -66,21 +66,18 @@ namespace AutoHuntManager
             if (Manager != null)
                 RecalculateAnimals();
             else
-                Log.Message("No manager");
+                Log.Error("Attempted to open the auto hunt manager without the map component available");
         }
 
         private void RecalculateAnimals()
         {
-            Log.Message("Recalculating Animals");
             animalCounts.Clear();
             foreach (AutoHuntConfig config in Manager.configs)
             {
                 AnimalCountRecord value = default;
                 CountAnimals(Find.CurrentMap, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
-                Log.Message(config.animal.LabelCap);
             }
-            Log.Message($"Found {Manager.configs.Count} animals");
             configsOrdered = (from c in Manager.configs
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
@@ -89,10 +86,7 @@ namespace AutoHuntManager
         public override void DoWindowContents(Rect inRect)
         {
             if (Manager == null)
-            {
-                Log.Error("Attempted to open the auto hunt manager without the map component available");
                 return;
-            }
             Rect rect = new Rect(inRect);
             rect.yMax -= Window.CloseButSize.y;
             rect.yMin += 8f;
@@ -148,7 +142,7 @@ namespace AutoHuntManager
         private void CountAnimals(Map map, AutoHuntConfig config, ThingDef animal, out int currentMales, out int currentMalesYoung, out int currentFemales, out int currentFemalesYoung, out int currentTotal, out int currentPregnant)
         {
             currentMales = (currentMalesYoung = (currentFemales = (currentFemalesYoung = (currentTotal = (currentPregnant = 0)))));
-            foreach (Pawn spawnedColonyAnimal in map.mapPawns.SpawnedColonyAnimals)
+            foreach (Pawn spawnedColonyAnimal in map.mapPawns.AllPawns.Where(a => Manager.CanEverAutoHunt(a)))
             {
                 if (spawnedColonyAnimal.def != animal || !Manager.CanEverAutoHunt(spawnedColonyAnimal))
                     continue;
@@ -287,20 +281,20 @@ namespace AutoHuntManager
             TextAnchor anchor2 = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             widgetRow.Label(string.Empty, 24f);
-            widgetRow.Label("AutoSlaughterHeaderColLabel".Translate(), width, "AutoHuntHeaderTooltipLabel".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentTotal".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxTotal".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMales".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMales".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMalesYoung".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMalesYoung".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemales".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemales".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemalesYoung".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
-            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColLabel".Translate(), width, "AutoHuntHeaderTooltipLabel".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentTotal".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxTotal".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMales".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMales".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMalesYoung".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMalesYoung".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemales".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemales".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemalesYoung".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
             widgetRow.Label("AllowHunt".Translate(), 72f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
-            widgetRow.Label("ForceAutoHunt".Translate(), 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
+            widgetRow.Label(string.Empty, 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Text.Anchor = anchor2;
             Widgets.EndGroup();
             GUI.color = Color.gray;
