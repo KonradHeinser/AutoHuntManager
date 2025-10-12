@@ -58,7 +58,7 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
-        public override Vector2 InitialSize => new Vector2(1050f, 600f);
+        public override Vector2 RequestedTabSize => new Vector2(1050f, 600f);
 
         public override void PostOpen()
         {
@@ -277,18 +277,18 @@ namespace AutoHuntManager
             TextAnchor anchor2 = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             widgetRow.Label(string.Empty, 24f);
-            widgetRow.Label("AutoHuntHeaderColLabel".Translate(), width, "AutoHuntHeaderTooltipLabel".Translate());
-            widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentTotal".Translate());
-            widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxTotal".Translate());
-            widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMales".Translate());
-            widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMales".Translate());
-            widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMalesYoung".Translate());
-            widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMalesYoung".Translate());
-            widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemales".Translate());
-            widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemales".Translate());
-            widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemalesYoung".Translate());
-            widgetRow.Label("AutoHuntHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
-            widgetRow.Label("AutoHuntHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColLabel".Translate(), width, "AutoHuntHeaderTooltipLabel".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentTotal".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxTotal".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMales".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMales".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMalesYoung".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMalesYoung".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemales".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemales".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemalesYoung".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
+            widgetRow.Label("AutoSlaughterHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
             widgetRow.Label("AllowHunt".Translate(), 72f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
             widgetRow.Label("ForceAutoHunt".Translate(), 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Text.Anchor = anchor2;
