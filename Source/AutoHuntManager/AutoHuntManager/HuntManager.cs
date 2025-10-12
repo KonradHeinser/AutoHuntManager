@@ -203,11 +203,24 @@ namespace AutoHuntManager
             forbiddenThings.Clear();
         }
 
-        public bool CanEverAutoHunt(Pawn animal)
+        public bool CanEverAutoHunt(Pawn animal, bool ignoreHunts = false)
         {
-            return animal.IsAnimal && map.designationManager.DesignationOn(animal) == null &&
-                (animal.Faction == null || animal.Faction.def == FactionDefOf.Insect) && 
-                !forbiddenHunts.Contains(animal);
+            if (animal?.IsAnimal != true) 
+                return false;
+
+            if (forbiddenHunts.Contains(animal))
+                return false;
+
+            if (animal.Faction != null && animal.Faction != Faction.OfInsects)
+                return false;
+
+            if (!animal.Spawned || animal.Fogged())
+                return false;
+
+            if (!ignoreHunts && map.designationManager.HasMapDesignationOn(animal))
+                return false;
+
+            return true;
         }
 
         public override void MapGenerated()
@@ -236,6 +249,12 @@ namespace AutoHuntManager
                 TryPopulateMissingAnimals();
                 SaveConfigs();
             }
+        }
+
+        public void ForgetForbidden()
+        {
+            forbiddenHunts.Clear();
+            forbiddenThings.Clear();
         }
 
         protected void TryPopulateMissingAnimals()

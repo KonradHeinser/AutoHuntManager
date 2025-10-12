@@ -58,7 +58,9 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
-        public override Vector2 RequestedTabSize => new Vector2(1050f, Mathf.Min(animalCounts.Count * 30f + 200f,UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1050f, Mathf.Min(MinSize,UI.screenHeight));
+
+        protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : UI.screenHeight;
 
         public override void PostOpen()
         {
@@ -75,7 +77,8 @@ namespace AutoHuntManager
             foreach (AutoHuntConfig config in Manager.configs)
             {
                 AnimalCountRecord value = default;
-                CountAnimals(Find.CurrentMap, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
+                var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
+                CountAnimals(animals, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
             }
             configsOrdered = (from c in Manager.configs
@@ -139,12 +142,13 @@ namespace AutoHuntManager
             GUI.color = color;
         }
 
-        private void CountAnimals(Map map, AutoHuntConfig config, ThingDef animal, out int currentMales, out int currentMalesYoung, out int currentFemales, out int currentFemalesYoung, out int currentTotal, out int currentPregnant)
+        private void CountAnimals(List<Pawn> pawns, AutoHuntConfig config, ThingDef animal, out int currentMales, out int currentMalesYoung, out int currentFemales, out int currentFemalesYoung, out int currentTotal, out int currentPregnant)
         {
             currentMales = (currentMalesYoung = (currentFemales = (currentFemalesYoung = (currentTotal = (currentPregnant = 0)))));
-            foreach (Pawn spawnedColonyAnimal in map.mapPawns.AllPawns.Where(a => Manager.CanEverAutoHunt(a)))
+            if (pawns.NullOrEmpty()) return;
+            foreach (Pawn spawnedColonyAnimal in pawns)
             {
-                if (spawnedColonyAnimal.def != animal || !Manager.CanEverAutoHunt(spawnedColonyAnimal))
+                if (spawnedColonyAnimal.def != animal)
                     continue;
 
                 if (spawnedColonyAnimal.gender == Gender.Male)
