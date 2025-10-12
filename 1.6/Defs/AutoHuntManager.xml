@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <MainButtonDef>
+        <defName>AutoHuntManager</defName>
+        <label>auto-hunt manager</label>
+        <description>Manager for designating what pawns should automatically hunt.</description>
+        <tabWindowClass>AutoHuntManager.MainTabWindow_AutoHunt</tabWindowClass>
+        <order>51</order>
+        <closesWorldView>true</closesWorldView>
+        <minimized>True</minimized>
+        <iconPath>UI/Buttons/MainButtons/Ideoligions</iconPath>
+    </MainButtonDef>
+</Defs>

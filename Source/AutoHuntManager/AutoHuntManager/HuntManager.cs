@@ -29,7 +29,7 @@ namespace AutoHuntManager
         protected static bool savedInsectsAllow = false;
         protected bool savedHumanlikeAllow = false;
         protected List<Thing> forbiddenThings = new List<Thing>();
-        protected List<Thing> forbiddenHunts = new List<Thing>();
+        protected List<Pawn> forbiddenHunts = new List<Pawn>();
 
         public HuntManager(Map map) : base(map)
         {
@@ -203,11 +203,38 @@ namespace AutoHuntManager
             forbiddenThings.Clear();
         }
 
-        public bool CanEverAutoHunt(Pawn animal)
+        public bool CanEverAutoHunt(Pawn animal, bool forDisplay = false)
         {
-            return animal.IsAnimal && map.designationManager.DesignationOn(animal) == null &&
-                (animal.Faction == null || animal.Faction.def == FactionDefOf.Insect) && 
-                !forbiddenHunts.Contains(animal);
+            if (animal?.IsAnimal != true) 
+                return false;
+
+
+            if (animal.Faction != null && animal.Faction != Faction.OfInsects)
+                return false;
+
+            if (!animal.Spawned || animal.Fogged())
+                return false;
+
+            if (!forDisplay)
+            {
+                if (forbiddenHunts.Contains(animal))
+                    return false;
+
+                if (map.designationManager.HasMapDesignationOn(animal))
+                    return false;
+            }
+            else
+            {
+                if (forbiddenHunts.Contains(animal) && map.designationManager.DesignationOn(animal).def != DesignationDefOf.Hunt)
+                    return false;
+            }
+
+            return true;
+        }
+
+        public int ForbiddenCount(ThingDef animal)
+        {
+            return forbiddenHunts.Where(a => a.def == animal && a.Spawned && !a.Fogged() && !a.Dead).Count();
         }
 
         public override void MapGenerated()
@@ -236,6 +263,17 @@ namespace AutoHuntManager
                 TryPopulateMissingAnimals();
                 SaveConfigs();
             }
+        }
+
+        public void ForgetForbidden()
+        {
+            forbiddenHunts.Clear();
+            forbiddenThings.Clear();
+        }
+
+        public void NarrowForbidForget(ThingDef animal)
+        {
+            forbiddenHunts.RemoveWhere(a => a.def == animal);
         }
 
         protected void TryPopulateMissingAnimals()
