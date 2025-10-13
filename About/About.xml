@@ -19,13 +19,21 @@
   </loadAfter>
 
   <description>
-This allows you to set up hunting conditions similar to how you can set automatic slaughtering. The menu includes a section for setting the desired amount of raw nutrition, along with a toggle for insect meat counting as part of the stockpile. Wild humans and animals marked for taming will never be marked for hunting by the manager, and existing corpses will be prioritized as food sources when available.
+This allows you to set up hunting conditions somewhat similar to how you can set automatic slaughtering using the bow icon next to the wildlife menu tab. 
 
-[url=https://discord.gg/fYP8qkcNDh]Discord link[/url] for those who want an easier way to ask questions, make requests, or just chat. I'll also be posting new releases there.
+The in-game menu allows you to set the desired amount of raw nutrition, along with whether or not insect and/or human meat count as part of the stockpile. Every six in-game hours it tallies up all claimed meat, corpses, and existing hunting targets, and if there isn't enough meat stored the manager begins searching. 
 
-[url=https://steamcommunity.com/id/alite/myworkshopfiles/?appid=294100]Easy link to all of my Rimworld mods[/url]
+This manager will prioritize trying to find corpses or raw food that haven't been claimed, then it starts looking through the living wildlife to see if any of them can be culled down to the limits you specify. It will start with the animals least likely to retaliate (i.e. rabbits and squirrels), and gradually work up to hunting the most dangerous animals listed for hunting until either the nutrition level or the limits are met.
 
-[url=https://github.com/KonradHeinser/AutoHuntManager][img]https://i.imgur.com/kTkpTOE.png[/img][/url]
-[url=https://ko-fi.com/alite56114][img]https://i.imgur.com/Utx6OIH.png[/img][/url]
-  </description>
+You can also specify some animals to be always hunted down to the specified levels using the Force column, which will cause the auto-hunt manager to cull those animals before it looks at nutrition or considers retaliation chance. It's mostly intended for allowing you to ensure insects are always hunted even if they aren't considered viable food, or for ensuring predators don't stick around on the map for too long.
+
+Animals marked for taming will never be marked for hunting by the manager, and every time it marks an animal for hunting, that animal is put on an ignore list so it won't try to mark the animal for hunting again if you unmark it.
+
+If you move your colony (i.e. via abandonment/settling or gravship), then the manager will attempt to port over its settings to your new home. It is recommended that you double-check your configurations post settling as this loading sometimes doesn't work as intended, especially if you have something that enables multiple colony maps. This saving can be disabled in the menu, and does not matter if your colony never moves. 
+
+Because the map itself is what keeps track of this, adding or removing this mod mid-save will cause issues. Your save may survive those issues, but I wouldn't recommend testing fate.
+
+[url=https://github.com/KonradHeinser/][img]https://raw.githubusercontent.com/KonradHeinser/EBSGFramework/main/SteamDescriptionDisplays/Github.png[/img][/url]
+[url=https://ko-fi.com/alite56114][img]https://raw.githubusercontent.com/KonradHeinser/EBSGFramework/main/SteamDescriptionDisplays/Kofi.png[/img][/url]
+[url=https://discord.gg/fYP8qkcNDh][img]https://raw.githubusercontent.com/KonradHeinser/EBSGFramework/main/SteamDescriptionDisplays/Discord.png[/img][/url]  </description>
 </ModMetaData>

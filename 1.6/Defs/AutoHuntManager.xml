@@ -8,6 +8,18 @@
         <order>51</order>
         <closesWorldView>true</closesWorldView>
         <minimized>True</minimized>
-        <iconPath>UI/Buttons/MainButtons/Ideoligions</iconPath>
+        <iconPath>UI/AutoHuntManager</iconPath>
     </MainButtonDef>
 </Defs>
+<!--
+Lower section
+
+Hide Absent       | Target Nutrition  | Include Insects | Pause
+Hide Insects      | Include Products  | Include Human   | Immediate Search
+Showing (Non)Conf | Remember Configs  | Include Twisted | Forget Forbidden
+
+- The Showing should cycle between all, non-configured, and configured
+- Remember Configs tooltip should specify that it only applies within the same save, and if colonies aren't abandoned and settled it does nothing
+- Hide Include Twisted when anomaly is disabled
+- Hide Forget Forbidden when there are no forbidden hunts
+-->
