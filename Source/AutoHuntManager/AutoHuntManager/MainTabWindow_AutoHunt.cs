@@ -58,7 +58,7 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
-        public override Vector2 RequestedTabSize => new Vector2(900f, Mathf.Min(MinSize,UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(MinSize,UI.screenHeight));
 
         protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : UI.screenHeight;
 
@@ -91,7 +91,7 @@ namespace AutoHuntManager
             if (Manager == null)
                 return;
             Rect rect = new Rect(inRect);
-            rect.yMax -= Window.CloseButSize.y;
+            rect.yMax -= CloseButSize.y + 100f;
             rect.yMin += 8f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
@@ -118,10 +118,13 @@ namespace AutoHuntManager
 
             listing_Standard.End();
             Widgets.EndScrollView();
-            Rect rect3 = new Rect(inRect.x + inRect.width / 2f + CloseButSize.x / 2f + 10f, inRect.y + inRect.height - 35f, 395f, 50f)
+            Rect lower = new Rect(inRect)
             {
-                yMax = inRect.yMax,
-                xMax = inRect.xMax
+                yMin = rect.yMax + 3f,
+            };
+            Rect rect3 = new Rect(lower)
+            {
+                xMin = lower.xMax - 300f
             };
             Color color = GUI.color;
             GameFont font = Text.Font;
@@ -179,19 +182,13 @@ namespace AutoHuntManager
             }
         }
 
-        private float CalculateLabelWidth(Rect rect)
-        {
-            float num = 64f;
-            return rect.width - num * 7f - 420f - 32f;
-        }
-
         private void DoMaxColumn(WidgetRow row, ref int val, ref string buffer, int current)
         {
             int num = val;
             if (val == -1)
             {
                 row.Gap(-4f);
-                if (row.ButtonIconWithBG(TexButton.Infinity, 47f, "AutoSlaughterTooltipSetLimit".Translate()))
+                if (row.ButtonIconWithBG(TexButton.Infinity, 48f, "AutoSlaughterTooltipSetLimit".Translate()))
                 {
                     SoundDefOf.Click.PlayOneShotOnCamera();
                     val = current;
@@ -202,8 +199,8 @@ namespace AutoHuntManager
             else
             {
                 row.CellGap = 0f;
-                row.Gap(-4f);
-                row.TextFieldNumeric<int>(ref val, ref buffer, 39f);
+                row.Gap(-5f);
+                row.TextFieldNumeric<int>(ref val, ref buffer, 40f);
                 val = Mathf.Max(0, val);
                 if (row.ButtonIcon(TexButton.CloseXSmall, null, Color.white, null, null, doMouseoverSound: true, 16f))
                 {
@@ -222,7 +219,6 @@ namespace AutoHuntManager
 
         private void DoAnimalHeader(Rect rect1, Rect rect2)
         {
-            float width = CalculateLabelWidth(rect1);
             Widgets.BeginGroup(new Rect(rect1.x, rect1.y, rect1.width, rect1.height + rect2.height + 1f));
             int num = 0;
             foreach (Rect tmpGroupRect in tmpGroupRects)
@@ -260,7 +256,7 @@ namespace AutoHuntManager
             Text.Anchor = (TextAnchor)4;
             row.Label(string.Empty, 24f);
             float startX = row.FinalX;
-            row.Label(string.Empty, width, "AutoHuntHeaderTooltipLabel".Translate());
+            row.Label(string.Empty, 100f, "AutoHuntHeaderTooltipLabel".Translate());
             Rect item = new Rect(startX, rect1.height, row.FinalX - startX, rect2.height);
             tmpMouseoverHighlightRects.Add(item);
             tmpGroupRects.Add(item);
@@ -271,8 +267,8 @@ namespace AutoHuntManager
             AddCurrentAndMaxEntries("AnimalFemaleYoung");
             AddCurrentAndMaxEntries("AnimalPregnant");
             float forceXStart = row.FinalX;
-            row.Label(string.Empty, 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
-            Rect item2 = new Rect(startX, rect1.height, row.FinalX - forceXStart, rect2.height);
+            row.Label(string.Empty, 62f, "AutoHuntHeaderTooltipForceHunt".Translate());
+            Rect item2 = new Rect(forceXStart, rect1.height, row.FinalX - forceXStart, rect2.height);
             tmpMouseoverHighlightRects.Add(item2);
             tmpGroupRects.Add(item2);
 
@@ -283,32 +279,34 @@ namespace AutoHuntManager
             TextAnchor anchor2 = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             widgetRow.Label(string.Empty, 24f);
-            widgetRow.Label("AutoSlaugtherHeaderColLabel".Translate(), width, "AutoHuntHeaderTooltipLabel".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentTotal".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxTotal".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMales".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMales".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentMalesYoung".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxMalesYoung".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemales".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemales".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentFemalesYoung".Translate());
-            widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColLabel".Translate(), 100f, "AutoHuntHeaderTooltipLabel".Translate());
+            CurMaxPair("Total");
+            CurMaxPair("Males");
+            CurMaxPair("MalesYoung");
+            CurMaxPair("Females");
+            CurMaxPair("FemalesYoung");
             widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
-            widgetRow.Label("AllowHunt".Translate(), 72f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
-            widgetRow.Label("ForceAutoHunt".Translate(), 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
+            widgetRow.Label("AllowHunt".Translate(), 56f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
+            widgetRow.Label("ForceAutoHunt".Translate(), 62f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Text.Anchor = anchor2;
             Widgets.EndGroup();
             GUI.color = Color.gray;
             Widgets.DrawLineHorizontal(rect2.x, rect2.y + rect2.height + 1f, rect2.width);
             GUI.color = Color.white;
-            void AddCurrentAndMaxEntries(string headerKey, float extraWidthFirst = 0f, float extraWidthSecond = 0f)
+
+            void CurMaxPair(string str)
+            {
+                widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, $"AutoHuntHeaderTooltipCurrent{str}".Translate());
+                widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, $"AutoHuntHeaderTooltipMax{str}".Translate());
+            }
+
+            void AddCurrentAndMaxEntries(string headerKey)
             {
                 startX = row.FinalX;
-                row.Label(string.Empty, 60f + extraWidthFirst);
+                row.Label(string.Empty, 60f);
                 tmpMouseoverHighlightRects.Add(new Rect(startX, rect1.height, row.FinalX - startX, rect2.height));
                 float finalX = row.FinalX;
-                row.Label(string.Empty, 56f + extraWidthSecond);
+                row.Label(string.Empty, 56f);
                 tmpMouseoverHighlightRects.Add(new Rect(finalX, rect1.height, row.FinalX - finalX, rect2.height));
                 Rect rect3 = new Rect(startX, 0f, row.FinalX - startX, rect2.height);
                 Widgets.Label(rect3, headerKey.Translate());
@@ -323,13 +321,12 @@ namespace AutoHuntManager
 
             Color color = GUI.color;
             AnimalCountRecord animalCountRecord = animalCounts[config.animal];
-            float width = CalculateLabelWidth(rect);
             Widgets.BeginGroup(rect);
             WidgetRow row = new WidgetRow(0f, 0f);
             row.DefIcon(config.animal);
             row.Gap(4f);
             GUI.color = ((animalCountRecord.total == 0) ? Color.gray : color);
-            row.Label(config.animal.LabelCap.Truncate(width), width, GetTipForAnimal());
+            row.Label(config.animal.LabelCap.Truncate(97f), 97f, GetTipForAnimal());
             GUI.color = color;
             DrawCurrentCol(animalCountRecord.total, config.maxTotal);
             DoMaxColumn(row, ref config.maxTotal, ref config.uiMaxTotalBuffer, animalCountRecord.total);
@@ -345,17 +342,12 @@ namespace AutoHuntManager
             row.Label(animalCountRecord.pregnant.ToString(), 60f);
             Text.Anchor = (TextAnchor)0;
             bool allowHuntPregnant = config.allowHuntPregnant;
-            row.Gap(26f);
+            row.Gap(19f);
             Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, 24f, disabled: false, paintable: true);
             if (allowHuntPregnant != config.allowHuntPregnant)
                 RecalculateAnimals();
-            row.Gap(80f);
+            row.Gap(60f);
             Widgets.Checkbox(row.FinalX, 0f, ref config.forceHunt, 24f, disabled: false, paintable: true);
-
-            row.Gap(52f);
-            Text.Anchor = (TextAnchor)0;
-            row.Gap(24f);
-
             Widgets.EndGroup();
 
 
