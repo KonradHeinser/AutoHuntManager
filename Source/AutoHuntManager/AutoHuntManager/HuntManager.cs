@@ -18,18 +18,34 @@ namespace AutoHuntManager
         protected bool insectsAllow = false;
         protected bool humanlikeAllow = false;
         protected bool twistedAllow = false;
-        protected bool saveConfigOnMapDestroy = true;
         protected List<Pawn> animalsToHuntCached = new List<Pawn>();
         protected List<Pawn> forcedAnimalsToHuntCached = new List<Pawn>();
         public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
         protected bool cacheDirty;
         protected float nutritionTarget = 999f;
 
-        protected static List<AutoHuntConfig> savedConfigs = new List<AutoHuntConfig>();
-        protected static bool savedInsectsAllow = false;
-        protected bool savedHumanlikeAllow = false;
         protected List<Thing> forbiddenThings = new List<Thing>();
         protected List<Pawn> forbiddenHunts = new List<Pawn>();
+
+        public List<ThingDef> forbiddenAnimals = new List<ThingDef>();
+        public bool dirtyForbidden = true;
+        public List<ThingDef> ForbiddenAnimals
+        {
+            get
+            {
+                if (dirtyForbidden)
+                {
+                    dirtyForbidden = false;
+                    forbiddenAnimals.Clear();
+                    if (!forbiddenHunts.NullOrEmpty())
+                        foreach (var a in forbiddenHunts)
+                            if (!forbiddenAnimals.Contains(a.def))
+                                forbiddenAnimals.Add(a.def);
+                }
+                return forbiddenAnimals;
+            }
+        }
+
 
         public HuntManager(Map map) : base(map)
         {
@@ -237,10 +253,16 @@ namespace AutoHuntManager
             return forbiddenHunts.Where(a => a.def == animal && a.Spawned && !a.Fogged() && !a.Dead).Count();
         }
 
+        public void ForbidHunt(Pawn animal)
+        {
+            forbiddenHunts.Add(animal);
+            dirtyForbidden = true;
+        }
+
         public override void MapGenerated()
         {
             base.MapGenerated();
-            LoadConfigs();
+            TryPopulateMissingAnimals();
         }
 
         public override void ExposeData()
@@ -249,10 +271,8 @@ namespace AutoHuntManager
             Scribe_Values.Look(ref paused, "paused", false);
             Scribe_Values.Look(ref insectsAllow, "insectsAllow", false);
             Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
-            Scribe_Values.Look(ref saveConfigOnMapDestroy, "saveConfigOnMapDestroy", false);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 5f);
+            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 999f);
             Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);
-            Scribe_Collections.Look(ref savedConfigs, "savedConfigs", LookMode.Deep);
             Scribe_Collections.Look(ref forbiddenThings, "forbiddenThings", LookMode.Reference);
             Scribe_Collections.Look(ref forbiddenHunts, "forbiddenHunts", LookMode.Reference);
             
@@ -261,18 +281,19 @@ namespace AutoHuntManager
                 if (configs.RemoveAll(x => x.animal == null || x.animal.IsCorpse) != 0)
                     Log.Warning("Some auto-hunt configs had null animals after loading.");
                 TryPopulateMissingAnimals();
-                SaveConfigs();
             }
         }
 
         public void ForgetForbidden()
         {
+            dirtyForbidden = true;
             forbiddenHunts.Clear();
             forbiddenThings.Clear();
         }
 
         public void NarrowForbidForget(ThingDef animal)
         {
+            dirtyForbidden = true;
             forbiddenHunts.RemoveWhere(a => a.def == animal);
         }
 
@@ -285,30 +306,6 @@ namespace AutoHuntManager
                     {
                         animal = allDef
                     });
-        }
-
-        public override void MapRemoved()
-        {
-            base.MapRemoved();
-            if (saveConfigOnMapDestroy)
-                SaveConfigs();
-        }
-
-        protected void SaveConfigs()
-        {
-            savedConfigs = new List<AutoHuntConfig>(configs);
-            savedHumanlikeAllow = humanlikeAllow;
-            savedInsectsAllow = insectsAllow;
-        }
-
-        protected void LoadConfigs()
-        {
-            if (savedConfigs.NullOrEmpty())
-                TryPopulateMissingAnimals();
-            else
-                configs = new List<AutoHuntConfig>(savedConfigs);
-            humanlikeAllow = savedHumanlikeAllow;
-            insectsAllow = savedInsectsAllow;
         }
 
         protected void ResetConfigs()
@@ -353,7 +350,7 @@ namespace AutoHuntManager
                     map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
                     if (ValidPrey(animal))
                         num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
-                    forbiddenHunts.Add(animal);
+                    ForbidHunt(animal);
                 }
 
             // If existing hunts are enough to put us above the target, don't bother checking anything else
@@ -446,7 +443,7 @@ namespace AutoHuntManager
                     foreach (var animal in safeAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        forbiddenHunts.Add(animal);
+                        ForbidHunt(animal);
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
@@ -460,7 +457,7 @@ namespace AutoHuntManager
                     foreach (var animal in safishAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        forbiddenHunts.Add(animal);
+                        ForbidHunt(animal);
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
@@ -474,7 +471,7 @@ namespace AutoHuntManager
                     foreach (var animal in unsafeAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        forbiddenHunts.Add(animal);
+                        ForbidHunt(animal);
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
@@ -488,7 +485,7 @@ namespace AutoHuntManager
                     foreach (var animal in dangerousAnimals)
                     {
                         map.designationManager.AddDesignation(new Designation(animal, DesignationDefOf.Hunt));
-                        forbiddenHunts.Add(animal);
+                        ForbidHunt(animal);
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
