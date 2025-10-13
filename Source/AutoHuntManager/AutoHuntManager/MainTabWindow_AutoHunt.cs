@@ -58,7 +58,7 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
-        public override Vector2 RequestedTabSize => new Vector2(1050f, Mathf.Min(MinSize,UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(MinSize,UI.screenHeight));
 
         protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : UI.screenHeight;
 
@@ -191,7 +191,7 @@ namespace AutoHuntManager
             if (val == -1)
             {
                 row.Gap(-4f);
-                if (row.ButtonIconWithBG(TexButton.Infinity, 46f, "AutoSlaughterTooltipSetLimit".Translate()))
+                if (row.ButtonIconWithBG(TexButton.Infinity, 47f, "AutoSlaughterTooltipSetLimit".Translate()))
                 {
                     SoundDefOf.Click.PlayOneShotOnCamera();
                     val = current;
@@ -203,7 +203,7 @@ namespace AutoHuntManager
             {
                 row.CellGap = 0f;
                 row.Gap(-4f);
-                row.TextFieldNumeric<int>(ref val, ref buffer, 38f);
+                row.TextFieldNumeric<int>(ref val, ref buffer, 39f);
                 val = Mathf.Max(0, val);
                 if (row.ButtonIcon(TexButton.CloseXSmall, null, Color.white, null, null, doMouseoverSound: true, 16f))
                 {
@@ -349,7 +349,7 @@ namespace AutoHuntManager
             Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, 24f, disabled: false, paintable: true);
             if (allowHuntPregnant != config.allowHuntPregnant)
                 RecalculateAnimals();
-            row.Gap(86f);
+            row.Gap(80f);
             Widgets.Checkbox(row.FinalX, 0f, ref config.forceHunt, 24f, disabled: false, paintable: true);
 
             row.Gap(52f);
