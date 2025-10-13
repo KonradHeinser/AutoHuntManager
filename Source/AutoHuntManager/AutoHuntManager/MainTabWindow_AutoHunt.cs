@@ -190,22 +190,20 @@ namespace AutoHuntManager
             int num = val;
             if (val == -1)
             {
-                float num2 = 68f;
-                float width = (60f - num2) / 2f;
-                row.Gap(width);
-                if (row.ButtonIconWithBG(TexButton.Infinity, 48f, "AutoSlaughterTooltipSetLimit".Translate()))
+                row.Gap(-4f);
+                if (row.ButtonIconWithBG(TexButton.Infinity, 46f, "AutoSlaughterTooltipSetLimit".Translate()))
                 {
                     SoundDefOf.Click.PlayOneShotOnCamera();
                     val = current;
                 }
 
-                row.Gap(width);
+                row.Gap(-4f);
             }
             else
             {
                 row.CellGap = 0f;
                 row.Gap(-4f);
-                row.TextFieldNumeric<int>(ref val, ref buffer, 40f);
+                row.TextFieldNumeric<int>(ref val, ref buffer, 38f);
                 val = Mathf.Max(0, val);
                 if (row.ButtonIcon(TexButton.CloseXSmall, null, Color.white, null, null, doMouseoverSound: true, 16f))
                 {
@@ -273,7 +271,7 @@ namespace AutoHuntManager
             AddCurrentAndMaxEntries("AnimalFemaleYoung");
             AddCurrentAndMaxEntries("AnimalPregnant", 0f, 16f);
             float forceXStart = row.FinalX;
-            row.Label("ForceAutoHunt".Translate(), 56f, "AutoHuntHeaderTooltipForceHunt".Translate());
+            row.Label(string.Empty, 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Rect item2 = new Rect(startX, rect1.height, row.FinalX - forceXStart, rect2.height);
             tmpMouseoverHighlightRects.Add(item2);
             tmpGroupRects.Add(item2);
@@ -298,7 +296,7 @@ namespace AutoHuntManager
             widgetRow.Label("AutoSlaugtherHeaderColMax".Translate(), 56f, "AutoHuntHeaderTooltipMaxFemalesYoung".Translate());
             widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
             widgetRow.Label("AllowHunt".Translate(), 72f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
-            widgetRow.Label(string.Empty, 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
+            widgetRow.Label("ForceAutoHunt".Translate(), 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Text.Anchor = anchor2;
             Widgets.EndGroup();
             GUI.color = Color.gray;
@@ -351,7 +349,7 @@ namespace AutoHuntManager
             Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, 24f, disabled: false, paintable: true);
             if (allowHuntPregnant != config.allowHuntPregnant)
                 RecalculateAnimals();
-            row.Gap(26f);
+            row.Gap(86f);
             Widgets.Checkbox(row.FinalX, 0f, ref config.forceHunt, 24f, disabled: false, paintable: true);
 
             row.Gap(52f);
@@ -382,7 +380,7 @@ namespace AutoHuntManager
             {
                 TaggedString labelCap = config.animal.LabelCap;
                 if (Prefs.DevMode)
-                    labelCap += "\n\nDEV: Animals to slaughter:\n" + Manager.AnimalsToHunt.Where(x => x.def == config.animal).Select(DevTipPartForPawn).ToLineList("  - ");
+                    labelCap += "\n\nDEV: Animals to hunt:\n" + Manager.AnimalsToHunt.Where(x => x.def == config.animal).Select(DevTipPartForPawn).ToLineList("  - ");
 
                 return labelCap;
             }
