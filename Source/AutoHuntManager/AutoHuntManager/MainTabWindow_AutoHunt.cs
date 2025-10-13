@@ -58,7 +58,7 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
-        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(MinSize,UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(900f, Mathf.Min(MinSize,UI.screenHeight));
 
         protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : UI.screenHeight;
 
@@ -269,7 +269,7 @@ namespace AutoHuntManager
             AddCurrentAndMaxEntries("AnimalMaleYoung");
             AddCurrentAndMaxEntries("AnimalFemaleAdult");
             AddCurrentAndMaxEntries("AnimalFemaleYoung");
-            AddCurrentAndMaxEntries("AnimalPregnant", 0f, 16f);
+            AddCurrentAndMaxEntries("AnimalPregnant");
             float forceXStart = row.FinalX;
             row.Label(string.Empty, 72f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Rect item2 = new Rect(startX, rect1.height, row.FinalX - forceXStart, rect2.height);
