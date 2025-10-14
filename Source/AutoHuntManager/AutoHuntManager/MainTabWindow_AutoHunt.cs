@@ -60,9 +60,7 @@ namespace AutoHuntManager
 
         public bool hideAbsent = true;
 
-        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(MinSize,UI.screenHeight));
-
-        protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : 500f;
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(animalCounts.Count * 30f + 200f, UI.screenHeight));
 
         public override void PreOpen()
         {
@@ -87,6 +85,7 @@ namespace AutoHuntManager
                               where !hideAbsent || animalCounts[c.animal].total > 0
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
+            SetInitialSizeAndPosition();
         }
 
         public override void DoWindowContents(Rect inRect)
