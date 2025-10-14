@@ -64,9 +64,9 @@ namespace AutoHuntManager
 
         protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : 500f;
 
-        public override void PostOpen()
+        public override void PreOpen()
         {
-            base.PostOpen();
+            base.PreOpen();
             if (Manager != null)
                 RecalculateAnimals();
             else
