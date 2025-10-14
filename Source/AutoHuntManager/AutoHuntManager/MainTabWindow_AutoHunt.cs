@@ -58,9 +58,11 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
+        public bool hideAbsent = true;
+
         public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(MinSize,UI.screenHeight));
 
-        protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : UI.screenHeight;
+        protected float MinSize => animalCounts.Count > 0 ? animalCounts.Count * 30f + 200f : 500f;
 
         public override void PostOpen()
         {
@@ -81,7 +83,8 @@ namespace AutoHuntManager
                 CountAnimals(animals, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
             }
-            configsOrdered = (from c in Manager.configs
+            configsOrdered = (from c in Manager.configs 
+                              where !hideAbsent || animalCounts[c.animal].total > 0
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
         }
@@ -89,7 +92,11 @@ namespace AutoHuntManager
         public override void DoWindowContents(Rect inRect)
         {
             if (Manager == null)
+            {
+                Close();
                 return;
+            }
+
             Rect rect = new Rect(inRect);
             rect.yMax -= CloseButSize.y + 100f;
             rect.yMin += 8f;

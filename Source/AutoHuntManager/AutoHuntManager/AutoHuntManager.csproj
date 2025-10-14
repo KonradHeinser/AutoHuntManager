@@ -32,6 +32,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AutoHuntConfig.cs" />
+    <Compile Include="ConfigStorage.cs" />
     <Compile Include="HuntManager.cs" />
     <Compile Include="MainTabWindow_AutoHunt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

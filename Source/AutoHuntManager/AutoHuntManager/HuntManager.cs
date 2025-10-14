@@ -14,6 +14,8 @@ namespace AutoHuntManager
         protected List<Pawn> tmpAnimalsFemaleYoung = new List<Pawn>();
         protected List<Pawn> tmpAnimalsPregnant = new List<Pawn>();
 
+        protected bool save = true;
+        protected bool home = false;
         protected bool paused = false;
         protected bool insectsAllow = false;
         protected bool humanlikeAllow = false;
@@ -22,11 +24,11 @@ namespace AutoHuntManager
         protected List<Pawn> forcedAnimalsToHuntCached = new List<Pawn>();
         public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
         protected bool cacheDirty;
-        protected float nutritionTarget = 999f;
+        protected float nutritionTarget = 15f;
 
         protected List<Thing> forbiddenThings = new List<Thing>();
         protected List<Pawn> forbiddenHunts = new List<Pawn>();
-
+        
         public List<ThingDef> forbiddenAnimals = new List<ThingDef>();
         public bool dirtyForbidden = true;
         public List<ThingDef> ForbiddenAnimals
@@ -262,16 +264,41 @@ namespace AutoHuntManager
         public override void MapGenerated()
         {
             base.MapGenerated();
+            if (map.IsPlayerHome)
+            {
+                home = true;
+                if (save)
+                {
+                    var comp = Current.Game.GetComponent<ConfigStorage>();
+                    if (comp?.configs.NullOrEmpty() == false)
+                        configs = new List<AutoHuntConfig>(comp.configs);
+                }
+            }
             TryPopulateMissingAnimals();
+        }
+
+        public override void MapRemoved()
+        {
+            base.MapRemoved();
+            var comp = Current.Game.GetComponent<ConfigStorage>();
+            if (save)
+            {
+                if (home)
+                    comp.configs = new List<AutoHuntConfig>(configs);
+            }
+            else
+                comp?.configs.Clear();
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
+            Scribe_Values.Look(ref home, "home", false);
+            Scribe_Values.Look(ref save, "save", true);
             Scribe_Values.Look(ref paused, "paused", false);
             Scribe_Values.Look(ref insectsAllow, "insectsAllow", false);
             Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 999f);
+            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 15f);
             Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);
             Scribe_Collections.Look(ref forbiddenThings, "forbiddenThings", LookMode.Reference);
             Scribe_Collections.Look(ref forbiddenHunts, "forbiddenHunts", LookMode.Reference);
