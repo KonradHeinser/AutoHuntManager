@@ -60,7 +60,7 @@ namespace AutoHuntManager
 
         public bool hideAbsent = true;
 
-        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(animalCounts.Count * 30f + 200f, UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(animalCounts.Count * 30f + 250f, UI.screenHeight));
 
         public override void PreOpen()
         {
