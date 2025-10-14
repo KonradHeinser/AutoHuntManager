@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
-using RimWorld;
+﻿using System.Collections.Generic;
 using Verse;
-using Verse.AI;
 
 namespace AutoHuntManager
 {
     public class ConfigStorage : GameComponent
     {
+        public ConfigStorage(Game game)
+        {
+            configs = new List<AutoHuntConfig>();
+        }
+
         public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
 
         public override void ExposeData()
