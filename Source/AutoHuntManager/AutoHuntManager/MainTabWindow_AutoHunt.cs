@@ -126,7 +126,7 @@ namespace AutoHuntManager
 
             Rect rect = new Rect(inRect);
             rect.yMax -= CloseButSize.y + 60f;
-            rect.yMin += 3f;
+            rect.yMin += 5f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
@@ -167,40 +167,27 @@ namespace AutoHuntManager
                 yMin = rect.yMax + 5f
             };
 
-            // Tip on the right right, requires a specific amount of area so it goes first
-            Rect rect3 = new Rect(lower)
-            {
-                xMin = lower.xMax - 200f
-            };
-            Text.Font = GameFont.Tiny;
-            if (Text.TinyFontSupported)
-                Widgets.Label(rect3, "AutoHuntTip".Translate());
-            else
-            {
-                Widgets.Label(rect3, "AutoHuntTip".Translate().Truncate(rect3.width));
-                TooltipHandler.TipRegion(rect3, "AutoHuntTip".Translate());
-            }
-            lower.xMax = rect3.xMin - 10f;
             GUI.color = color;
 
             // Pause, Start Search, and Forget Forbidden
 
             Widgets.BeginGroup(lower);
+            var actionWidth = Mathf.Min(80f, lower.width / 4f);
             WidgetRow pause = new WidgetRow(0f, 0f);
-            if (pause.ButtonText(Manager.paused ? "Paused".Translate() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: 40f))
+            if (pause.ButtonText(Manager.paused ? "Paused".Translate() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: actionWidth))
                 Manager.PauseToggle();
 
             WidgetRow search = new WidgetRow(0f, 35f);
-            if (search.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth:40f))
+            if (search.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth: actionWidth))
                 Manager.DesignateHunting();
 
             WidgetRow forget = new WidgetRow(0f, 70f);
-            if (forget.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), 40f))
+            if (forget.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), actionWidth))
                 Find.WindowStack.Add(new FloatMenu(Manager.Forgettable));
 
             Widgets.EndGroup();
 
-            lower.xMin += 50f;
+            lower.xMin += 100f;
             var width = lower.width / 3f;
 
             // Hiding options on the left
@@ -232,7 +219,8 @@ namespace AutoHuntManager
                     next = ConfigDisplay.All;
                     break;
             }
-            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: display.width - 4f))
+            cycle.Gap(10f);
+            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: display.width - 14f))
             {
                 curDisplay = next;
                 RecalculateAnimals();
@@ -248,7 +236,8 @@ namespace AutoHuntManager
             lower.xMin = basicConfigs.xMax; // Remove the basic configs rect from the remaining space
             Widgets.BeginGroup(basicConfigs);
             WidgetRow nutrition = new WidgetRow(0f, 0f);
-            nutrition.Label("Nutrition".Translate(), basicConfigs.width - 30f, "AutoHuntNutritionTooltip".Translate());
+            nutrition.Gap(10f);
+            nutrition.Label("Nutrition".Translate(), basicConfigs.width - 35f, "AutoHuntNutritionTooltip".Translate());
             int nut = Manager.nutritionTarget;
             string buffer = nut.ToString();
             nutrition.TextFieldNumeric<float>(ref nut, ref buffer, 30f);
@@ -272,7 +261,8 @@ namespace AutoHuntManager
             void CheckBox(string label, string tooltip, float y, ref bool toggle, bool recalc = false)
             {
                 WidgetRow row = new WidgetRow(0f, y);
-                row.Label(label, width - 30f, tooltip);
+                row.Gap(10f);
+                row.Label(label, width - 35f, tooltip);
                 bool old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)
