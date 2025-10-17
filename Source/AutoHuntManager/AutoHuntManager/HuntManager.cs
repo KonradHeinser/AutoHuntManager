@@ -172,6 +172,17 @@ namespace AutoHuntManager
                             tmpAnimals.AddRange(tmpAnimalsPregnant);
                         }
 
+                        if (config.maxMales != -1)
+                            while (tmpAnimalsMale.Count > config.maxMales)
+                            {
+                                Pawn a = tmpAnimalsMale.PopFront();
+                                tmpAnimals.Remove(a);
+                                if (config.forceHunt)
+                                    forcedAnimalsToHuntCached.Add(a);
+                                else
+                                    animalsToHuntCached.Add(a);
+                            }
+
                         if (config.maxFemales != -1)
                         {
                             while (tmpAnimalsFemale.Count > config.maxFemales)
@@ -185,32 +196,21 @@ namespace AutoHuntManager
                             }
                         }
 
-                        if (config.maxFemalesYoung != -1)
-                            while (tmpAnimalsFemaleYoung.Count > config.maxFemalesYoung)
-                            {
-                                Pawn a = tmpAnimalsFemaleYoung.PopFront();
-                                tmpAnimals.Remove(a);
-                                if (config.forceHunt)
-                                    forcedAnimalsToHuntCached.Add(a);
-                                else
-                                    animalsToHuntCached.Add(a);
-                            }
-
-                        if (config.maxMales != -1)
-                            while (tmpAnimalsMale.Count > config.maxMales)
-                            {
-                                Pawn a = tmpAnimalsMale.PopFront();
-                                tmpAnimals.Remove(a);
-                                if (config.forceHunt)
-                                    forcedAnimalsToHuntCached.Add(a);
-                                else
-                                    animalsToHuntCached.Add(a);
-                            }
-
                         if (config.maxMalesYoung != -1)
                             while (tmpAnimalsMaleYoung.Count > config.maxMalesYoung)
                             {
                                 Pawn a = tmpAnimalsMaleYoung.PopFront();
+                                tmpAnimals.Remove(a);
+                                if (config.forceHunt)
+                                    forcedAnimalsToHuntCached.Add(a);
+                                else
+                                    animalsToHuntCached.Add(a);
+                            }
+
+                        if (config.maxFemalesYoung != -1)
+                            while (tmpAnimalsFemaleYoung.Count > config.maxFemalesYoung)
+                            {
+                                Pawn a = tmpAnimalsFemaleYoung.PopFront();
                                 tmpAnimals.Remove(a);
                                 if (config.forceHunt)
                                     forcedAnimalsToHuntCached.Add(a);
