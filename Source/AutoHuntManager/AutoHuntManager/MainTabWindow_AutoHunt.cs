@@ -129,7 +129,7 @@ namespace AutoHuntManager
 
             Rect rect = new Rect(inRect);
             rect.yMax -= 105f;
-            rect.yMin += 6f;
+            rect.yMin += 7f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
@@ -196,7 +196,7 @@ namespace AutoHuntManager
 
             Widgets.EndGroup();
 
-            lower.xMin += actionWidth + gapAmount * 2;
+            lower.xMin += actionWidth + gapAmount * 1.5f;
             var width = lower.width / 3f;
 
             // Hiding options on the left
