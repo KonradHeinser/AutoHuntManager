@@ -71,7 +71,7 @@ namespace AutoHuntManager
 
         public bool hideAbsent = true;
 
-        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(configsOrdered.Count * 30f + 200f, UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(configsOrdered.Count * 30f + 220f, UI.screenHeight));
 
         public override void PreOpen()
         {
@@ -126,12 +126,12 @@ namespace AutoHuntManager
 
             Rect rect = new Rect(inRect);
             rect.yMax -= CloseButSize.y + 60f;
-            rect.yMin += 5f;
+            rect.yMin += 6f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
             };
-            viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count) + 60f);
+            viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count) + 65f);
             labelWidth = viewRect.width - 840f;
 
             Rect other = new Rect(rect)
@@ -172,7 +172,7 @@ namespace AutoHuntManager
             // Pause, Start Search, and Forget Forbidden
 
             Widgets.BeginGroup(lower);
-            var actionWidth = Mathf.Min(80f, lower.width / 4f);
+            var actionWidth = Mathf.Min(100f, lower.width / 4f);
             WidgetRow pause = new WidgetRow(0f, 0f);
             if (pause.ButtonText(Manager.paused ? "Paused".Translate() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: actionWidth))
                 Manager.PauseToggle();
@@ -187,7 +187,7 @@ namespace AutoHuntManager
 
             Widgets.EndGroup();
 
-            lower.xMin += 100f;
+            lower.xMin += actionWidth + 20f;
             var width = lower.width / 3f;
 
             // Hiding options on the left
@@ -219,8 +219,8 @@ namespace AutoHuntManager
                     next = ConfigDisplay.All;
                     break;
             }
-            cycle.Gap(10f);
-            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: display.width - 14f))
+            cycle.Gap(20f);
+            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: display.width - 30f))
             {
                 curDisplay = next;
                 RecalculateAnimals();
@@ -236,8 +236,8 @@ namespace AutoHuntManager
             lower.xMin = basicConfigs.xMax; // Remove the basic configs rect from the remaining space
             Widgets.BeginGroup(basicConfigs);
             WidgetRow nutrition = new WidgetRow(0f, 0f);
-            nutrition.Gap(10f);
-            nutrition.Label("Nutrition".Translate(), basicConfigs.width - 35f, "AutoHuntNutritionTooltip".Translate());
+            nutrition.Gap(20f);
+            nutrition.Label("Nutrition".Translate(), basicConfigs.width - 48f, "AutoHuntNutritionTooltip".Translate());
             int nut = Manager.nutritionTarget;
             string buffer = nut.ToString();
             nutrition.TextFieldNumeric<float>(ref nut, ref buffer, 30f);
@@ -261,8 +261,8 @@ namespace AutoHuntManager
             void CheckBox(string label, string tooltip, float y, ref bool toggle, bool recalc = false)
             {
                 WidgetRow row = new WidgetRow(0f, y);
-                row.Gap(10f);
-                row.Label(label, width - 35f, tooltip);
+                row.Gap(20f);
+                row.Label(label, width - 45f, tooltip);
                 bool old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)
