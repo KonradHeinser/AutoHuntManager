@@ -1,53 +1,53 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
 	<!--Lower section-->
-AutoHuntRawFood
-AutoHuntPauseTooltip
-AutoHuntDoCheck
-AutoHuntDoCheckTooltip
-AutoHuntForget
-AutoHuntForgetTooltip
-AutoHuntNutritionTooltip
-AutoHuntIncludeProducts
-AutoHuntIncludeProductsTooltip
-AutoHuntRememberConfigs
-AutoHuntRememberConfigsTooltip
-AutoHuntIncludeInsects
-AutoHuntIncludeInsectsTooltip
-AutoHuntIncludeHumanlike
-AutoHuntIncludeHumanlikeTooltip
-AutoHuntIncludeTwisted
-AutoHuntIncludeTwistedTooltip
-
+	<AutoHuntRawFood>Corpses and Items</AutoHuntRawFood>
+	<AutoHuntPauseTooltip>This toggles whether or not the manager will do its periodic checks.</AutoHuntPauseTooltip>
+	<AutoHuntDoCheck>Check Now</AutoHuntDoCheck>
+	<AutoHuntDoCheckTooltip>Causes the stockpile check to happen immediately, potentially unforbidding corpses/raw meat if available or starting hunts if there isn't enough raw meat available.\n\nIf you are finding that your hunters aren't keeping up with consumption, it is recommended that you increase the target nutrition.</AutoHuntDoCheckTooltip>
+	<AutoHuntForget>Unforbid</AutoHuntForget>
+	<AutoHuntForgetTooltip>When an item is marked unforbidden or an animal is marked for hunting by the manager, it is put on a forbidden list within the manager to allow you to forbid it again/stop it from being hunted. This button allows you to make the manager forget some or all of the things on those lists.\n\nIf this button is grayed out, that means there is nothing in the manager forbidden list to forget. The manager will automatically clear its forbidden list of used/destroyed items and dead/missing animals periodically, so this button won't have any practical use in most cases.</AutoHuntForgetTooltip>
 
 	<AutoHuntHideAbsent>Hide Absent</AutoHuntHideAbsent>
 	<AutoHuntHideAbsentTooltip>Hide all wild animals not presently found on the map.\n\nThis does not alter any configurations, just what is shown in the manager. Hidden limits will act the same as before if new animals wander into the map.</AutoHuntHideAbsentTooltip>
 	<AutoHuntHideInsect>Hide Insects</AutoHuntHideInsect>
 	<AutoHuntHideInsectTooltip>Hide all wild insects from the list. This is mainly useful if you don't want to hunt insect hives or have already set all insects to be hunted.\n\nThis does not alter any configurations, just what is shown in the manager. Hidden limits will act the same as before if new insects pop up and stick around long enough.</AutoHuntHideInsectTooltip>
 
+	<AutoHuntNutritionTooltip>This is the amount of raw meat based nutrition the manager will try to make sure is available. It starts with adding up the meat from existing hunting targets and forced hunting targets along with existing unforbidden corpses and raw meat, and if those are not enough it will look for forbidden meat and corpses it hasn't tried to claim previously, then start hunting based on the limits you specify.</AutoHuntNutritionTooltip>
+	<AutoHuntIncludeProducts>Include Products</AutoHuntIncludeProducts>
+	<AutoHuntIncludeProductsTooltip>Determines if the nutrition check should include animal products like milk, unfertilized eggs, and insect jelly.</AutoHuntIncludeProductsTooltip>
+	<AutoHuntRememberConfigs>Remember Configs</AutoHuntRememberConfigs>
+	<AutoHuntRememberConfigsTooltip>Makes the manager attempt to remember its configs when the colony moves, usually through abandonment and reforming or by gravship for those with Odyssey. It is recommended that you double-check your configs when the new colony is made, as this can sometimes act strangely, especially if you have something that allows for multiple colonies.\n\nIf the colony never disbands and moves, this does nothing. This does not save the list between games, just between colony maps on the same game.</AutoHuntRememberConfigsTooltip>
+
+	<AutoHuntIncludeInsects>Include Insects</AutoHuntIncludeInsects>
+	<AutoHuntIncludeInsectsTooltip>Determines if insect meat, corpses, and hunt targets are included as part of the nutrition stockpile.</AutoHuntIncludeInsectsTooltip>
+	<AutoHuntIncludeHumanlike>Include Humanlikes</AutoHuntIncludeHumanlike>
+	<AutoHuntIncludeHumanlikeTooltip>Determines if humanlike meat and corpses are included as part of the nutrition stockpile.\n\nWild human hunts are not included, but if a humanlike is killed their corpse is counted.</AutoHuntIncludeHumanlikeTooltip>
+	<AutoHuntIncludeTwisted>Include Twisted</AutoHuntIncludeTwisted>
+	<AutoHuntIncludeTwistedTooltip>Determines if twisted flesh and corpses that give twisted flesh are included as part of the nutrition stockpile.</AutoHuntIncludeTwistedTooltip>
+
 	<AutoHuntAll>All</AutoHuntAll>
 	<AutoHuntConfigured>Managed</AutoHuntConfigured>
 	<AutoHuntUnconfigured>Not Managed</AutoHuntUnconfigured>
-	<AutoHuntDisplayCycle>This button can be used make the manager hide animals based on whether or not you have specified limits for the animal. Clicking the button cycles through All (no check made), Managed (at least one of the groups has a max listed, and Not Managed (all of the max columns for the animal are left on infinity).\n\nThis does not alter any configurations, just what is shown in the manager. Hidden limits will still be handled the same.</AutoHuntDisplayCycle>
+	<AutoHuntDisplayCycle>This button can be used make the manager hide animals based on whether or not you have specified limits for the animal. Clicking the button cycles through All (no filter), Managed (at least one limit set), and Not Managed (no limits set).\n\nThis does not alter any configurations, just what is shown in the manager.</AutoHuntDisplayCycle>
 
 
 	<!--Main section-->
-	<AutoHuntTip>Non-pregnant animals will be chosen first from oldest to youngest, followed by pregnant animals from least to most progress through the pregnancy.</AutoHuntTip>
 	<ForceAutoHunt>Force</ForceAutoHunt>
 	<AutoHuntHeaderTooltipForceHunt>Forces auto-hunt to always aim to hunt this animal down to the specified limits, regardless of current nutrition levels and target.\n\nThis may cause other auto hunted animals to be hunted less depending on food needed, but if the nutrition level is set high enough this setting does nothing.</AutoHuntHeaderTooltipForceHunt>
 	<AllowHunt>Hunt</AllowHunt>
-	<AutoHuntHeaderTooltipLabel>The animal to be automatically hunted.</AutoHuntHeaderTooltipLabel>
+	<AutoHuntHeaderTooltipLabel>The animal to be automatically hunted.\n\nWhile force is not enabled for the animal, animals will be picked from this list from least to most dangerous.</AutoHuntHeaderTooltipLabel>
 	<AutoHuntHeaderTooltipCurrentTotal>The current number of wild animals, both male and female.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentTotal>
-	<AutoHuntHeaderTooltipMaxTotal>The maximum number of wild animals, both male and female.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxTotal>
+	<AutoHuntHeaderTooltipMaxTotal>The maximum number of wild animals, both male and female.\n\nHunters will automatically hunt any extras from oldest to youngest, starting with adult males followed by non-pregnant adult females followed by juveniles.</AutoHuntHeaderTooltipMaxTotal>
 	<AutoHuntHeaderTooltipCurrentMales>The current number of wild males of breeding age.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentMales>
 	<AutoHuntHeaderTooltipCurrentMalesYoung>The current number of wild baby and juvenile males.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentMalesYoung>
-	<AutoHuntHeaderTooltipMaxMales>The maximum number of wild males of breeding age.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxMales>
-	<AutoHuntHeaderTooltipMaxMalesYoung>The maximum number of wild baby and juvenile males.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxMalesYoung>
+	<AutoHuntHeaderTooltipMaxMales>The maximum number of wild males of breeding age.\n\nHunters will automatically hunt any extras from oldest to youngest.</AutoHuntHeaderTooltipMaxMales>
+	<AutoHuntHeaderTooltipMaxMalesYoung>The maximum number of wild baby and juvenile males.\n\nHunters will automatically hunt any extras from oldest to youngest.</AutoHuntHeaderTooltipMaxMalesYoung>
 	<AutoHuntHeaderTooltipCurrentFemales>The current number of wild females of breeding age.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentFemales>
 	<AutoHuntHeaderTooltipCurrentFemalesYoung>The current number of wild baby and juvenile females.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentFemalesYoung>
 	<AutoHuntHeaderTooltipMaxFemales>The maximum number of wild females.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxFemales>
-	<AutoHuntHeaderTooltipMaxFemalesYoung>The maximum number of wild baby and juvenile females.\n\nHunters will automatically hunt any extras.</AutoHuntHeaderTooltipMaxFemalesYoung>
+	<AutoHuntHeaderTooltipMaxFemalesYoung>The maximum number of wild baby and juvenile females.\n\nHunters will automatically hunt any extras from oldest to youngest.</AutoHuntHeaderTooltipMaxFemalesYoung>
 	<AutoHuntHeaderTooltipCurrentPregnant>The current number of wild pregnant animals.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentPregnant>
-	<AutoHuntHeaderTooltipAllowHuntPregnant>Allow pregnant animals to be hunted along with other females of the same species.</AutoHuntHeaderTooltipAllowHuntPregnant>
+	<AutoHuntHeaderTooltipAllowHuntPregnant>Allow pregnant animals to be hunted along with other females of the same species.\n\nThey will always be chosen last, and those with less progress through their pregnancy will be picked before those further along.</AutoHuntHeaderTooltipAllowHuntPregnant>
 	<AutoHuntTooltipSetLimit>Click to set an animal count limit.</AutoHuntTooltipSetLimit>
 </LanguageData>
