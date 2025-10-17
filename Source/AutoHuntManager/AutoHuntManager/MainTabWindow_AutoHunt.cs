@@ -125,8 +125,8 @@ namespace AutoHuntManager
             }
 
             Rect rect = new Rect(inRect);
-            rect.yMax -= CloseButSize.y + 60f;
-            rect.yMin += 6f;
+            rect.yMax -= 105f;
+            rect.yMin += 5f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
@@ -164,7 +164,7 @@ namespace AutoHuntManager
             Rect lower = new Rect(inRect) // The lower area of the manager which will be split up
             {
                 yMin = rect.yMax + 5f,
-                xMax = inRect.xMax + 15f // Slight increase in width because we don't have to worry about the bar
+                xMax = inRect.xMax + 25f // Slight increase in width because we don't have to worry about the bar
             };
 
             GUI.color = color;
@@ -190,7 +190,7 @@ namespace AutoHuntManager
 
             Widgets.EndGroup();
 
-            lower.xMin += actionWidth + gapAmount;
+            lower.xMin += actionWidth + gapAmount * 2;
             var width = lower.width / 3f;
 
             // Hiding options on the left
@@ -250,7 +250,7 @@ namespace AutoHuntManager
             };
             float nut = Manager.nutritionTarget;
             string buffer = nut.ToString();
-            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer, 0f, 99f);
+            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer, 0f, 100f);
             Manager.nutritionTarget = nut;
 
             CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.includeAnimalProducts);
