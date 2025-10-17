@@ -16,9 +16,9 @@ namespace AutoHuntManager
         public bool humanlikeAllow = false;
         public bool twistedAllow = false;
         public bool includeAnimalProducts = true;
-        public int nutritionTarget = 15;
+        public float nutritionTarget = 7.5f;
 
-        public void SaveConfigs(List<AutoHuntConfig> configs, int nutritionTarget, bool paused, bool insectsAllow, bool humanlikeAllow, bool twistedAllow, bool includeAnimalProducts)
+        public void SaveConfigs(List<AutoHuntConfig> configs, float nutritionTarget, bool paused, bool insectsAllow, bool humanlikeAllow, bool twistedAllow, bool includeAnimalProducts)
         {
             this.configs = configs;
             this.nutritionTarget = nutritionTarget;
@@ -37,7 +37,7 @@ namespace AutoHuntManager
             humanlikeAllow = false;
             twistedAllow = false;
             includeAnimalProducts = true;
-            nutritionTarget = 15;
+            nutritionTarget = 7.5f;
         }
 
         public override void ExposeData()
@@ -46,7 +46,7 @@ namespace AutoHuntManager
             Scribe_Values.Look(ref paused, "paused", false);
             Scribe_Values.Look(ref insectsAllow, "insectsAllow", false);
             Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 15);
+            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 7.5f);
             Scribe_Values.Look(ref twistedAllow, "twistedAllow", false);
             Scribe_Values.Look(ref includeAnimalProducts, "includeAnimalProducts", true);
             Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);

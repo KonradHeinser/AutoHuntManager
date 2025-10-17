@@ -164,7 +164,7 @@ namespace AutoHuntManager
             Rect lower = new Rect(inRect) // The lower area of the manager which will be split up
             {
                 yMin = rect.yMax + 5f,
-                xMax = rect.xMax - 8f
+                xMax = inRect.xMax + 5f // Slight increase in width because we don't have to worry about the bar
             };
 
             GUI.color = color;
@@ -240,11 +240,18 @@ namespace AutoHuntManager
             Widgets.BeginGroup(basicConfigs);
             WidgetRow nutrition = new WidgetRow(0f, 0f);
             nutrition.Gap(gapAmount);
-            nutrition.Label("Nutrition".Translate(), basicConfigs.width - gapAmount - 30f, "AutoHuntNutritionTooltip".Translate());
-            int nut = Manager.nutritionTarget;
+            var nutLabel = nutrition.Label("Nutrition".Translate(), basicConfigs.width - gapAmount - 30f, "AutoHuntNutritionTooltip".Translate());
+            var nutFieldRect = new Rect()
+            {
+                xMin = nutLabel.xMax,
+                xMax = basicConfigs.xMax,
+                yMin = nutLabel.yMin,
+                yMax = nutLabel.yMax
+            };
+            float nut = Manager.nutritionTarget;
             string buffer = nut.ToString();
-            nutrition.TextFieldNumeric<float>(ref nut, ref buffer, 30f);
-            Manager.nutritionTarget = Mathf.Clamp(nut, 0, 99);
+            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer, 0f, 99f);
+            Manager.nutritionTarget = nut;
 
             CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.includeAnimalProducts);
             CheckBox("AutoHuntRememberConfigs".Translate(), "AutoHuntRememberConfigsTooltip".Translate(), 70f, ref Manager.save);

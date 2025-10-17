@@ -26,7 +26,7 @@ namespace AutoHuntManager
         protected List<Pawn> forcedAnimalsToHuntCached = new List<Pawn>();
         public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
         protected bool cacheDirty;
-        public int nutritionTarget = 15;
+        public float nutritionTarget = 7.5f;
 
         public List<Thing> forbiddenThings = new List<Thing>();
         protected List<Pawn> forbiddenHunts = new List<Pawn>();
@@ -366,7 +366,7 @@ namespace AutoHuntManager
             Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
             Scribe_Values.Look(ref twistedAllow, "twistedAllow", false);
             Scribe_Values.Look(ref includeAnimalProducts, "includeAnimalProducts", true);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 15);
+            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 7.5f);
             Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);
             Scribe_Collections.Look(ref forbiddenThings, "forbiddenThings", LookMode.Reference);
             Scribe_Collections.Look(ref forbiddenHunts, "forbiddenHunts", LookMode.Reference);
