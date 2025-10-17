@@ -256,7 +256,7 @@ namespace AutoHuntManager
             };
             float nut = Manager.nutritionTarget;
             string buffer = nut.ToString();
-            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer, 0f, 100f);
+            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer, 0f);
             Manager.nutritionTarget = nut;
 
             CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.includeAnimalProducts);
