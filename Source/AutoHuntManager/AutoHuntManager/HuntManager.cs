@@ -482,7 +482,7 @@ namespace AutoHuntManager
             if (!availableMeat.EnumerableNullOrEmpty())
                 foreach (var meat in availableMeat)
                 {
-                    num += meat.GetStatValue(StatDefOf.Nutrition);
+                    num += meat.GetStatValue(StatDefOf.Nutrition) * meat.stackCount;
                     if (num >= nutritionTarget)
                         return;
                 }
@@ -508,7 +508,7 @@ namespace AutoHuntManager
             if (!unclaimedMeat.EnumerableNullOrEmpty())
                 foreach (var meat in unclaimedMeat)
                 {
-                    num += meat.GetStatValue(StatDefOf.Nutrition);
+                    num += meat.GetStatValue(StatDefOf.Nutrition) * meat.stackCount;
                     meat.SetForbidden(false);
                     forbiddenThings.Add(meat);
                     if (num >= nutritionTarget)
