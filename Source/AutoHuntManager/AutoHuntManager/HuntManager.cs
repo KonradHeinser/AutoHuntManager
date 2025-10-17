@@ -52,7 +52,7 @@ namespace AutoHuntManager
         }
 
         private List<FloatMenuOption> forgettable = new List<FloatMenuOption>();
-        private bool forgettableDirty = true;
+        public bool forgettableDirty = true;
         public List<FloatMenuOption> Forgettable
         {
             get
@@ -149,7 +149,7 @@ namespace AutoHuntManager
                                 {
                                     if (!spawnedAnimal.health.hediffSet.HasHediff(HediffDefOf.Pregnant))
                                         tmpAnimalsFemale.Add(spawnedAnimal);
-                                    else if (config.allowHuntPregnant)
+                                    else
                                     {
                                         tmpAnimalsPregnant.Add(spawnedAnimal);
                                         continue;

@@ -71,7 +71,7 @@ namespace AutoHuntManager
 
         public bool hideAbsent = true;
 
-        public override Vector2 RequestedTabSize => new Vector2(990f, Mathf.Min(configsOrdered.Count * 30f + 210f, UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(980f, Mathf.Min(configsOrdered.Count * 30f + 210f, UI.screenHeight));
 
         public override void PreOpen()
         {
@@ -110,7 +110,7 @@ namespace AutoHuntManager
                         return true;
                 }
             }
-
+            Manager.forgettableDirty = true;
             SetInitialSizeAndPosition();
         }
 
