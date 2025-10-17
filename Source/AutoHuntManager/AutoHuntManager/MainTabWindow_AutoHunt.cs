@@ -164,7 +164,7 @@ namespace AutoHuntManager
             Rect lower = new Rect(inRect) // The lower area of the manager which will be split up
             {
                 yMin = rect.yMax + 5f,
-                xMax = inRect.xMax + 5f // Slight increase in width because we don't have to worry about the bar
+                xMax = inRect.xMax + 15f // Slight increase in width because we don't have to worry about the bar
             };
 
             GUI.color = color;
@@ -244,7 +244,7 @@ namespace AutoHuntManager
             var nutFieldRect = new Rect()
             {
                 xMin = nutLabel.xMax,
-                xMax = nutLabel.xMax + 30f,
+                xMax = nutLabel.xMax + 40f,
                 yMin = nutLabel.yMin,
                 yMax = nutLabel.yMax
             };
