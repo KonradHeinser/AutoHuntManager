@@ -124,9 +124,12 @@ namespace AutoHuntManager
                 return;
             }
 
+            if (Manager.forgettableDirty)
+                RecalculateAnimals();
+
             Rect rect = new Rect(inRect);
             rect.yMax -= 105f;
-            rect.yMin += 5f;
+            rect.yMin += 6f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
@@ -185,7 +188,10 @@ namespace AutoHuntManager
             if (Manager.Forgettable.NullOrEmpty())
                 GUI.color = Color.gray;
             if (forget.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), actionWidth))
+            {
                 Find.WindowStack.Add(new FloatMenu(Manager.Forgettable));
+            }
+
             GUI.color = color;
 
             Widgets.EndGroup();
