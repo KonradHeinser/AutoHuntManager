@@ -59,6 +59,7 @@ namespace AutoHuntManager
             {
                 if (forgettableDirty)
                 {
+                    CleanUpForbidden();
                     forgettableDirty = false;
                     forgettable.Clear();
                     if (!ForbiddenAnimals.NullOrEmpty() || !forbiddenThings.NullOrEmpty())
@@ -117,6 +118,7 @@ namespace AutoHuntManager
             {
                 try
                 {
+                    CleanUpForbidden();
                     animalsToHuntCached.Clear();
                     forcedAnimalsToHuntCached.Clear();
                     var animals = map.mapPawns.AllPawnsSpawned.Where(a => CanEverAutoHunt(a));
@@ -376,6 +378,7 @@ namespace AutoHuntManager
                 if (configs.RemoveAll(x => x.animal == null || x.animal.IsCorpse) != 0)
                     Log.Warning("Some auto-hunt configs had null animals after loading.");
                 TryPopulateMissingAnimals();
+                CleanUpForbidden();
             }
         }
 
@@ -435,6 +438,16 @@ namespace AutoHuntManager
             cacheDirty = true;
         }
 
+        private void CleanUpForbidden()
+        {
+            if (!forbiddenThings.NullOrEmpty())
+                forbiddenThings.RemoveWhere(t => t == null || t.Destroyed || !t.Spawned);
+
+            if (!forbiddenHunts.NullOrEmpty())
+                if (forbiddenHunts.RemoveAll(a => a == null || a.Destroyed || a.Dead || !a.Spawned) != 0)
+                    forbiddenDirty = true;
+        }
+
         public void DesignateHunting()
         {
             cacheDirty = true; // Dirty the cache so we can regenerate the list
@@ -442,6 +455,8 @@ namespace AutoHuntManager
 
             var hunting = map.mapPawns.AllPawnsSpawned.Where(a => a.IsAnimal && ValidPrey(a) &&
                 map.designationManager.DesignationOn(a)?.def == DesignationDefOf.Hunt);
+
+            CleanUpForbidden();
 
             if (!hunting.EnumerableNullOrEmpty())
                 foreach (var animal in hunting)
@@ -464,13 +479,6 @@ namespace AutoHuntManager
             // If the map doesn't generally support wild animals, then the player is on their own
             if (!map.Biome.wildAnimalsCanWanderInto)
                 return;
-
-            if (!forbiddenThings.NullOrEmpty())
-                forbiddenThings.RemoveWhere(t => t == null || t.Destroyed || !t.Spawned);
-
-            if (!forbiddenHunts.NullOrEmpty())
-                if (forbiddenHunts.RemoveAll(a => a == null || a.Destroyed || a.Dead || !a.Spawned) != 0)
-                    forbiddenDirty = true;
 
             // Locate all the viable meat
             var rawMeat = map.listerThings.GetAllThings(f => ValidFood(f) &&
