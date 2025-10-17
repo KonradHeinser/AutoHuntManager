@@ -244,7 +244,7 @@ namespace AutoHuntManager
             var nutFieldRect = new Rect()
             {
                 xMin = nutLabel.xMax,
-                xMax = basicConfigs.xMax,
+                xMax = basicConfigs.xMax - 20f,
                 yMin = nutLabel.yMin,
                 yMax = nutLabel.yMax
             };
