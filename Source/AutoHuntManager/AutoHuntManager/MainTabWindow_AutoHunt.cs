@@ -9,6 +9,15 @@ namespace AutoHuntManager
 {
     public class MainTabWindow_AutoHunt : MainTabWindow
     {
+        private enum ConfigDisplay
+        {
+            All,
+            Configured,
+            Unconfigured
+        }
+
+        private ConfigDisplay curDisplay;
+
         private struct AnimalCountRecord
         {
             public int total;
@@ -58,9 +67,11 @@ namespace AutoHuntManager
 
         private List<Rect> tmpGroupRects = new List<Rect>();
 
+        public bool hideInsect = false;
+
         public bool hideAbsent = true;
 
-        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(configsOrdered.Count * 30f + 250f, UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(configsOrdered.Count * 30f + 200f, UI.screenHeight));
 
         public override void PreOpen()
         {
@@ -74,19 +85,36 @@ namespace AutoHuntManager
         private void RecalculateAnimals()
         {
             animalCounts.Clear();
+            var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
+
             foreach (AutoHuntConfig config in Manager.configs)
             {
                 AnimalCountRecord value = default;
-                var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
                 CountAnimals(animals, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
             }
             configsOrdered = (from c in Manager.configs 
-                              where !hideAbsent || animalCounts[c.animal].total > 0
+                              where CanDisplay(c.animal) && (!hideAbsent || animalCounts[c.animal].total > 0) && (!hideInsect || !c.animal.race.Insect)
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
+
+            bool CanDisplay(ThingDef animal)
+            {
+                switch (curDisplay)
+                {
+                    case ConfigDisplay.Configured:
+                        return Manager.AnyLimits[animal];
+                    case ConfigDisplay.Unconfigured:
+                        return !Manager.AnyLimits[animal];
+                    default:
+                        return true;
+                }
+            }
+
             SetInitialSizeAndPosition();
         }
+
+        private float labelWidth = 100f;
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -97,46 +125,53 @@ namespace AutoHuntManager
             }
 
             Rect rect = new Rect(inRect);
-            rect.yMax -= CloseButSize.y + 100f;
-            rect.yMin += 8f;
+            rect.yMax -= CloseButSize.y + 60f;
+            rect.yMin += 3f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
-                ColumnWidth = inRect.width - 16f - 4f
+                ColumnWidth = inRect.width - 20f
             };
-            viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count + 1));
-            Rect other = rect;
-            other.x = scrollPos.x;
-            other.y = scrollPos.y;
+            viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count) + 60f);
+            labelWidth = viewRect.width - 840f;
+
+            Rect other = new Rect(rect)
+            {
+                x = scrollPos.x,
+                y = scrollPos.y
+            };
             Widgets.BeginScrollView(rect, ref scrollPos, viewRect);
             listing_Standard.Begin(viewRect);
             DoAnimalHeader(listing_Standard.GetRect(24f), listing_Standard.GetRect(24f));
-            listing_Standard.Gap(6f);
             int num = 0;
-            foreach (AutoHuntConfig item in configsOrdered)
-            {
-                Rect rect2 = listing_Standard.GetRect(24f);
-                if (rect2.Overlaps(other))
-                    DoAnimalRow(rect2, item, num);
-
-                listing_Standard.Gap(6f);
-                num++;
-            }
+            if (!configsOrdered.NullOrEmpty())
+                foreach (AutoHuntConfig item in configsOrdered)
+                {
+                    listing_Standard.Gap(6f);
+                    Rect rect2 = listing_Standard.GetRect(24f);
+                    if (rect2.Overlaps(other))
+                        DoAnimalRow(rect2, item, num);
+                    num++;
+                }
 
             listing_Standard.End();
             Widgets.EndScrollView();
-            Rect lower = new Rect(inRect)
-            {
-                yMin = rect.yMax + 3f,
-            };
-            Rect rect3 = new Rect(lower)
-            {
-                xMin = lower.xMax - 300f
-            };
             Color color = GUI.color;
             GameFont font = Text.Font;
             TextAnchor anchor = Text.Anchor;
             Text.Anchor = (TextAnchor)3;
             GUI.color = Color.gray;
+
+
+            Rect lower = new Rect(inRect) // The lower area of the manager which will be split up
+            {
+                yMin = rect.yMax + 5f
+            };
+
+            // Tip on the right right, requires a specific amount of area so it goes first
+            Rect rect3 = new Rect(lower)
+            {
+                xMin = lower.xMax - 200f
+            };
             Text.Font = GameFont.Tiny;
             if (Text.TinyFontSupported)
                 Widgets.Label(rect3, "AutoHuntTip".Translate());
@@ -145,10 +180,104 @@ namespace AutoHuntManager
                 Widgets.Label(rect3, "AutoHuntTip".Translate().Truncate(rect3.width));
                 TooltipHandler.TipRegion(rect3, "AutoHuntTip".Translate());
             }
+            lower.xMax = rect3.xMin - 10f;
+            GUI.color = color;
+
+            // Pause, Start Search, and Forget Forbidden
+
+            Widgets.BeginGroup(lower);
+            WidgetRow pause = new WidgetRow(0f, 0f);
+            if (pause.ButtonText(Manager.paused ? "Paused".Translate() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: 40f))
+                Manager.PauseToggle();
+
+            WidgetRow search = new WidgetRow(0f, 35f);
+            if (search.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth:40f))
+                Manager.DesignateHunting();
+
+            WidgetRow forget = new WidgetRow(0f, 70f);
+            if (forget.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), 40f))
+                Find.WindowStack.Add(new FloatMenu(Manager.Forgettable));
+
+            Widgets.EndGroup();
+
+            lower.xMin += 50f;
+            var width = lower.width / 3f;
+
+            // Hiding options on the left
+            Rect display = new Rect(lower)
+            {
+                xMax = lower.xMin + width
+            };
+            lower.xMin += width; // Remove the display from the remaining space
+
+            Widgets.BeginGroup(display);
+            CheckBox("AutoHuntHideAbsent".Translate(), "AutoHuntHideAbsentTooltip".Translate(), 0f, ref hideAbsent, true);
+            CheckBox("AutoHuntHideInsect".Translate(), "AutoHuntHideInsectTooltip".Translate(), 35f, ref hideInsect, true);
+
+            WidgetRow cycle = new WidgetRow(0f, 70f);
+            string text = string.Empty;
+            ConfigDisplay next = ConfigDisplay.All;
+            switch (curDisplay)
+            {
+                case ConfigDisplay.All:
+                    text = "AutoHuntAll".Translate();
+                    next = ConfigDisplay.Configured;
+                    break;
+                case ConfigDisplay.Configured:
+                    text = "AutoHuntConfigured".Translate();
+                    next = ConfigDisplay.Unconfigured; 
+                    break;
+                case ConfigDisplay.Unconfigured:
+                    text = "AutoHuntUnconfigured".Translate();
+                    next = ConfigDisplay.All;
+                    break;
+            }
+            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: display.width - 4f))
+            {
+                curDisplay = next;
+                RecalculateAnimals();
+            }
+
+            Widgets.EndGroup();
+
+            // Basic Configurations in the middle
+            Rect basicConfigs = new Rect(lower)
+            {
+                xMax = lower.xMin + width
+            };
+            lower.xMin = basicConfigs.xMax; // Remove the basic configs rect from the remaining space
+            Widgets.BeginGroup(basicConfigs);
+            WidgetRow nutrition = new WidgetRow(0f, 0f);
+            nutrition.Label("Nutrition".Translate(), basicConfigs.width - 30f, "AutoHuntNutritionTooltip".Translate());
+            int nut = Manager.nutritionTarget;
+            string buffer = nut.ToString();
+            nutrition.TextFieldNumeric<float>(ref nut, ref buffer, 30f);
+            Manager.nutritionTarget = Mathf.Clamp(nut, 0, 99);
+
+            CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.includeAnimalProducts);
+            CheckBox("AutoHuntRememberConfigs".Translate(), "AutoHuntRememberConfigsTooltip".Translate(), 70f, ref Manager.save);
+            Widgets.EndGroup();
+
+            // Include Humanlike, Insect, and Twisted on the right
+            Widgets.BeginGroup(lower); // lower is already set to the rightmost area at this point
+            CheckBox("AutoHuntIncludeInsects".Translate(), "AutoHuntIncludeInsectsTooltip".Translate(), 0f, ref Manager.insectsAllow);
+            CheckBox("AutoHuntIncludeHumanlike".Translate(), "AutoHuntIncludeHumanlikeTooltip".Translate(), 35f, ref Manager.humanlikeAllow);
+            if (ModsConfig.AnomalyActive)
+                CheckBox("AutoHuntIncludeTwisted".Translate(), "AutoHuntIncludeTwistedTooltip".Translate(), 70f, ref Manager.twistedAllow);
+            Widgets.EndGroup();
 
             Text.Font = font;
             Text.Anchor = anchor;
-            GUI.color = color;
+
+            void CheckBox(string label, string tooltip, float y, ref bool toggle, bool recalc = false)
+            {
+                WidgetRow row = new WidgetRow(0f, y);
+                row.Label(label, width - 30f, tooltip);
+                bool old = toggle;
+                Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
+                if (recalc && toggle != old)
+                    RecalculateAnimals();
+            }
         }
 
         private void CountAnimals(List<Pawn> pawns, AutoHuntConfig config, ThingDef animal, out int currentMales, out int currentMalesYoung, out int currentFemales, out int currentFemalesYoung, out int currentTotal, out int currentPregnant)
@@ -262,7 +391,7 @@ namespace AutoHuntManager
             Text.Anchor = (TextAnchor)4;
             row.Label(string.Empty, 24f);
             float startX = row.FinalX;
-            row.Label(string.Empty, 100f, "AutoHuntHeaderTooltipLabel".Translate());
+            row.Label(string.Empty, labelWidth, "AutoHuntHeaderTooltipLabel".Translate());
             Rect item = new Rect(startX, rect1.height, row.FinalX - startX, rect2.height);
             tmpMouseoverHighlightRects.Add(item);
             tmpGroupRects.Add(item);
@@ -285,7 +414,7 @@ namespace AutoHuntManager
             TextAnchor anchor2 = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             widgetRow.Label(string.Empty, 24f);
-            widgetRow.Label("AutoSlaugtherHeaderColLabel".Translate(), 100f, "AutoHuntHeaderTooltipLabel".Translate());
+            widgetRow.Label("AutoSlaugtherHeaderColLabel".Translate(), labelWidth, "AutoHuntHeaderTooltipLabel".Translate());
             CurMaxPair("Total");
             CurMaxPair("Males");
             CurMaxPair("MalesYoung");
@@ -332,7 +461,7 @@ namespace AutoHuntManager
             row.DefIcon(config.animal);
             row.Gap(4f);
             GUI.color = ((animalCountRecord.total == 0) ? Color.gray : color);
-            row.Label(config.animal.LabelCap.Truncate(97f), 97f, GetTipForAnimal());
+            row.Label(config.animal.LabelCap.Truncate(labelWidth - 3f), labelWidth - 3f, GetTipForAnimal());
             GUI.color = color;
             DrawCurrentCol(animalCountRecord.total, config.maxTotal);
             DoMaxColumn(row, ref config.maxTotal, ref config.uiMaxTotalBuffer, animalCountRecord.total);
@@ -349,13 +478,12 @@ namespace AutoHuntManager
             Text.Anchor = (TextAnchor)0;
             bool allowHuntPregnant = config.allowHuntPregnant;
             row.Gap(19f);
-            Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, 24f, disabled: false, paintable: true);
+            Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, paintable: true);
             if (allowHuntPregnant != config.allowHuntPregnant)
                 RecalculateAnimals();
             row.Gap(60f);
-            Widgets.Checkbox(row.FinalX, 0f, ref config.forceHunt, 24f, disabled: false, paintable: true);
+            Widgets.Checkbox(row.FinalX, 0f, ref config.forceHunt, paintable: true);
             Widgets.EndGroup();
-
 
             void DrawCurrentCol(int val, int? limit = null)
             {

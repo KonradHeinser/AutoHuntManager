@@ -14,30 +14,33 @@ namespace AutoHuntManager
         protected List<Pawn> tmpAnimalsFemaleYoung = new List<Pawn>();
         protected List<Pawn> tmpAnimalsPregnant = new List<Pawn>();
 
-        protected bool save = true;
+        public bool save = true;
         protected bool home = false;
-        protected bool paused = false;
-        protected bool insectsAllow = false;
-        protected bool humanlikeAllow = false;
-        protected bool twistedAllow = false;
+        public bool paused = false;
+        public bool insectsAllow = false;
+        public bool humanlikeAllow = false;
+        public bool twistedAllow = false;
+        public bool includeAnimalProducts = true;
+
         protected List<Pawn> animalsToHuntCached = new List<Pawn>();
         protected List<Pawn> forcedAnimalsToHuntCached = new List<Pawn>();
         public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
         protected bool cacheDirty;
-        protected float nutritionTarget = 15f;
+        public int nutritionTarget = 15;
 
-        protected List<Thing> forbiddenThings = new List<Thing>();
+        public List<Thing> forbiddenThings = new List<Thing>();
         protected List<Pawn> forbiddenHunts = new List<Pawn>();
         
-        public List<ThingDef> forbiddenAnimals = new List<ThingDef>();
-        public bool dirtyForbidden = true;
+        private List<ThingDef> forbiddenAnimals = new List<ThingDef>();
+        private bool forbiddenDirty = true;
         public List<ThingDef> ForbiddenAnimals
         {
             get
             {
-                if (dirtyForbidden)
+                if (forbiddenDirty)
                 {
-                    dirtyForbidden = false;
+                    forbiddenDirty = false;
+                    forgettableDirty = true;
                     forbiddenAnimals.Clear();
                     if (!forbiddenHunts.NullOrEmpty())
                         foreach (var a in forbiddenHunts)
@@ -45,6 +48,61 @@ namespace AutoHuntManager
                                 forbiddenAnimals.Add(a.def);
                 }
                 return forbiddenAnimals;
+            }
+        }
+
+        private List<FloatMenuOption> forgettable = new List<FloatMenuOption>();
+        private bool forgettableDirty = true;
+        public List<FloatMenuOption> Forgettable
+        {
+            get
+            {
+                if (forgettableDirty)
+                {
+                    forgettableDirty = false;
+                    forgettable.Clear();
+                    if (!ForbiddenAnimals.NullOrEmpty() || !forbiddenThings.NullOrEmpty())
+                        forgettable.Add(new FloatMenuOption("AutoHuntAll".Translate(), delegate
+                        {
+                            ForgetForbidden();
+                        }));
+
+                    if (!forbiddenThings.NullOrEmpty())
+                        forgettable.Add(new FloatMenuOption("AutoHuntRawFood".Translate(), delegate
+                        {
+                            ForgetForbiddenThings();
+                        }));
+
+                    if (!ForbiddenAnimals.NullOrEmpty())
+                    {
+                        var sortedAnimals = new List<ThingDef>(ForbiddenAnimals);
+                        sortedAnimals.SortBy(a => a.label);
+                        foreach (var animal in sortedAnimals)
+                            forgettable.Add(new FloatMenuOption(animal.LabelCap, delegate
+                            {
+                                NarrowForbidForget(animal);
+                            }));
+                    }
+                }
+                return forgettable;
+            }
+        }
+
+        private Dictionary<ThingDef, bool> anyLimits = new Dictionary<ThingDef, bool>();
+        private bool limitsDirty = true;
+        public Dictionary<ThingDef, bool> AnyLimits
+        {
+            get
+            {
+                if (limitsDirty)
+                {
+                    limitsDirty = false;
+                    anyLimits.Clear();
+                    if (!configs.NullOrEmpty())
+                        foreach (var config in configs)
+                            anyLimits.Add(config.animal, config.AnyLimit);
+                }
+                return anyLimits;
             }
         }
 
@@ -243,7 +301,7 @@ namespace AutoHuntManager
             }
             else
             {
-                if (forbiddenHunts.Contains(animal) && map.designationManager.DesignationOn(animal).def != DesignationDefOf.Hunt)
+                if (forbiddenHunts.Contains(animal) && map.designationManager.DesignationOn(animal)?.def != DesignationDefOf.Hunt)
                     return false;
             }
 
@@ -258,7 +316,7 @@ namespace AutoHuntManager
         public void ForbidHunt(Pawn animal)
         {
             forbiddenHunts.Add(animal);
-            dirtyForbidden = true;
+            forbiddenDirty = true;
         }
 
         public override void MapGenerated()
@@ -271,7 +329,15 @@ namespace AutoHuntManager
                 {
                     var comp = Current.Game.GetComponent<ConfigStorage>();
                     if (comp?.configs.NullOrEmpty() == false)
+                    {
                         configs = new List<AutoHuntConfig>(comp.configs);
+                        nutritionTarget = comp.nutritionTarget;
+                        paused = comp.paused;
+                        insectsAllow = comp.insectsAllow;
+                        humanlikeAllow = comp.humanlikeAllow;
+                        twistedAllow = comp.twistedAllow;
+                        includeAnimalProducts = comp.includeAnimalProducts;
+                    }
                 }
             }
             TryPopulateMissingAnimals();
@@ -284,10 +350,10 @@ namespace AutoHuntManager
             if (save)
             {
                 if (home)
-                    comp.configs = new List<AutoHuntConfig>(configs);
+                    comp?.SaveConfigs(configs, nutritionTarget, paused, insectsAllow, humanlikeAllow, twistedAllow, includeAnimalProducts);
             }
             else
-                comp?.configs.Clear();
+                comp?.ResetConfigs();
         }
 
         public override void ExposeData()
@@ -298,7 +364,9 @@ namespace AutoHuntManager
             Scribe_Values.Look(ref paused, "paused", false);
             Scribe_Values.Look(ref insectsAllow, "insectsAllow", false);
             Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 15f);
+            Scribe_Values.Look(ref twistedAllow, "twistedAllow", false);
+            Scribe_Values.Look(ref includeAnimalProducts, "includeAnimalProducts", true);
+            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 15);
             Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);
             Scribe_Collections.Look(ref forbiddenThings, "forbiddenThings", LookMode.Reference);
             Scribe_Collections.Look(ref forbiddenHunts, "forbiddenHunts", LookMode.Reference);
@@ -313,15 +381,23 @@ namespace AutoHuntManager
 
         public void ForgetForbidden()
         {
-            dirtyForbidden = true;
+            forgettableDirty = true;
+            forbiddenDirty = true;
             forbiddenHunts.Clear();
             forbiddenThings.Clear();
         }
 
         public void NarrowForbidForget(ThingDef animal)
         {
-            dirtyForbidden = true;
+            forgettableDirty = true;
+            forbiddenDirty = true;
             forbiddenHunts.RemoveWhere(a => a.def == animal);
+        }
+
+        public void ForgetForbiddenThings()
+        {
+            forgettableDirty = true;
+            forbiddenThings.Clear();
         }
 
         protected void TryPopulateMissingAnimals()
@@ -355,6 +431,7 @@ namespace AutoHuntManager
 
         public void Notify_ConfigChanged()
         {
+            limitsDirty = true;
             cacheDirty = true;
         }
 
@@ -389,10 +466,15 @@ namespace AutoHuntManager
                 return;
 
             if (!forbiddenThings.NullOrEmpty())
-                forbiddenThings.RemoveWhere(t => t == null || t.Destroyed);
+                forbiddenThings.RemoveWhere(t => t == null || t.Destroyed || !t.Spawned);
+
+            if (!forbiddenHunts.NullOrEmpty())
+                if (forbiddenHunts.RemoveAll(a => a == null || a.Destroyed || a.Dead || !a.Spawned) != 0)
+                    forbiddenDirty = true;
 
             // Locate all the viable meat
-            var rawMeat = map.listerThings.GetAllThings(f => f.def.IsMeat && ValidFood(f) &&
+            var rawMeat = map.listerThings.GetAllThings(f => ValidFood(f) &&
+                (f.def.IsMeat || (includeAnimalProducts && (f.HasThingCategory(ThingCategoryDefOf.EggsUnfertilized) || f.HasThingCategory(AutoHuntDefOf.AnimalProductRaw)))) && 
                 (twistedAllow || !ModsConfig.AnomalyActive || f.def != ThingDefOf.Meat_Twisted));
 
             // Start with counting all the meat laying around claimed because it's the easiest to handle
