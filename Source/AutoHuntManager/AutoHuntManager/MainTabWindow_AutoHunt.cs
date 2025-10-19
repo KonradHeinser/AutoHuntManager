@@ -9,14 +9,7 @@ namespace AutoHuntManager
 {
     public class MainTabWindow_AutoHunt : MainTabWindow
     {
-        private enum ConfigDisplay
-        {
-            All,
-            Configured,
-            Unconfigured
-        }
-
-        private ConfigDisplay curDisplay;
+        public ConfigDisplay curDisplay;
 
         private struct AnimalCountRecord
         {
@@ -82,7 +75,9 @@ namespace AutoHuntManager
                 Log.Error("Attempted to open the auto hunt manager without the map component available");
         }
 
-        private void RecalculateAnimals()
+        public string nameSearch = string.Empty;
+
+        public void RecalculateAnimals()
         {
             animalCounts.Clear();
             var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
@@ -94,11 +89,13 @@ namespace AutoHuntManager
                 animalCounts.Add(config.animal, value);
             }
             configsOrdered = (from c in Manager.configs 
-                              where CanDisplay(c.animal) && (!hideAbsent || animalCounts[c.animal].total > 0) && (!hideInsect || !c.animal.race.Insect)
+                              where ManageDisplay(c.animal) && (!hideInsect || !c.animal.race.Insect) &&
+                                (!hideAbsent || animalCounts[c.animal].total > 0) && 
+                                (nameSearch.NullOrEmpty() || c.animal.label.Contains(nameSearch))
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
 
-            bool CanDisplay(ThingDef animal)
+            bool ManageDisplay(ThingDef animal)
             {
                 switch (curDisplay)
                 {
@@ -115,6 +112,12 @@ namespace AutoHuntManager
         }
 
         private float labelWidth = 100f;
+
+        public override void Close(bool doCloseSound = true)
+        {
+            base.Close(doCloseSound);
+            Find.WindowStack.TryRemoveAssignableFromType(typeof(Dialog_AutoHuntWindowConfig), false);
+        }
 
         public override void DoWindowContents(Rect inRect)
         {
@@ -188,10 +191,8 @@ namespace AutoHuntManager
             if (Manager.Forgettable.NullOrEmpty())
                 GUI.color = Color.gray;
             if (forget.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), actionWidth))
-            {
                 Find.WindowStack.Add(new FloatMenu(Manager.Forgettable));
-            }
-
+            
             GUI.color = color;
 
             Widgets.EndGroup();
@@ -207,34 +208,9 @@ namespace AutoHuntManager
             lower.xMin += width; // Remove the display from the remaining space
 
             Widgets.BeginGroup(display);
-            CheckBox("AutoHuntHideAbsent".Translate(), "AutoHuntHideAbsentTooltip".Translate(), 0f, ref hideAbsent, true);
-            CheckBox("AutoHuntHideInsect".Translate(), "AutoHuntHideInsectTooltip".Translate(), 35f, ref hideInsect, true);
-
-            WidgetRow cycle = new WidgetRow(0f, 70f);
-            string text = string.Empty;
-            ConfigDisplay next = ConfigDisplay.All;
-            switch (curDisplay)
-            {
-                case ConfigDisplay.All:
-                    text = "AutoHuntAll".Translate();
-                    next = ConfigDisplay.Configured;
-                    break;
-                case ConfigDisplay.Configured:
-                    text = "AutoHuntConfigured".Translate();
-                    next = ConfigDisplay.Unconfigured; 
-                    break;
-                case ConfigDisplay.Unconfigured:
-                    text = "AutoHuntUnconfigured".Translate();
-                    next = ConfigDisplay.All;
-                    break;
-            }
-            cycle.Gap(gapAmount);
-            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: display.width - gapAmount - 10f))
-            {
-                curDisplay = next;
-                RecalculateAnimals();
-            }
-
+            WidgetRow config = new WidgetRow(0f, 35f);
+            if (config.ButtonText("AutoHuntViewConfig".Translate()))
+                Find.WindowStack.Add(new Dialog_AutoHuntWindowConfig(this));
             Widgets.EndGroup();
 
             // Basic Configurations in the middle
