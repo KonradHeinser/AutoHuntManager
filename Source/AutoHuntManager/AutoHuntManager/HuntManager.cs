@@ -14,19 +14,13 @@ namespace AutoHuntManager
         protected List<Pawn> tmpAnimalsFemaleYoung = new List<Pawn>();
         protected List<Pawn> tmpAnimalsPregnant = new List<Pawn>();
 
+        protected bool home;
+        public bool paused;
         public bool save = true;
-        protected bool home = false;
-        public bool paused = false;
-        public bool insectsAllow = false;
-        public bool humanlikeAllow = false;
-        public bool twistedAllow = false;
-        public bool includeAnimalProducts = true;
-
         protected List<Pawn> animalsToHuntCached = new List<Pawn>();
         protected List<Pawn> forcedAnimalsToHuntCached = new List<Pawn>();
-        public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
         protected bool cacheDirty;
-        public float nutritionTarget = 7.5f;
+        public ConfigSet curConfig = new ConfigSet();
 
         public List<Thing> forbiddenThings = new List<Thing>();
         protected List<Pawn> forbiddenHunts = new List<Pawn>();
@@ -99,8 +93,8 @@ namespace AutoHuntManager
                 {
                     limitsDirty = false;
                     anyLimits.Clear();
-                    if (!configs.NullOrEmpty())
-                        foreach (var config in configs)
+                    if (!curConfig.configs.NullOrEmpty())
+                        foreach (var config in curConfig.configs)
                             anyLimits.Add(config.animal, config.AnyLimit);
                 }
                 return anyLimits;
@@ -125,7 +119,7 @@ namespace AutoHuntManager
                     if (animals.EnumerableNullOrEmpty())
                         return;
 
-                    foreach (AutoHuntConfig config in configs)
+                    foreach (AutoHuntConfig config in curConfig.configs)
                     {
                         if (!config.AnyLimit)
                             continue;
@@ -312,7 +306,7 @@ namespace AutoHuntManager
 
         public int ForbiddenCount(ThingDef animal)
         {
-            return forbiddenHunts.Where(a => a.def == animal && a.Spawned && !a.Fogged() && !a.Dead).Count();
+            return forbiddenHunts.Count(a => a.def == animal && a.Spawned && !a.Fogged() && !a.Dead);
         }
 
         public void ForbidHunt(Pawn animal)
@@ -329,16 +323,12 @@ namespace AutoHuntManager
                 home = true;
                 if (save)
                 {
+                    // Rework game component and configs saving to be at the mod level instead of the game level
                     var comp = Current.Game.GetComponent<ConfigStorage>();
-                    if (comp?.configs.NullOrEmpty() == false)
+                    if (comp != null)
                     {
-                        configs = new List<AutoHuntConfig>(comp.configs);
-                        nutritionTarget = comp.nutritionTarget;
+                        curConfig = comp.prevConfigs;
                         paused = comp.paused;
-                        insectsAllow = comp.insectsAllow;
-                        humanlikeAllow = comp.humanlikeAllow;
-                        twistedAllow = comp.twistedAllow;
-                        includeAnimalProducts = comp.includeAnimalProducts;
                     }
                 }
             }
@@ -349,10 +339,10 @@ namespace AutoHuntManager
         {
             base.MapRemoved();
             var comp = Current.Game.GetComponent<ConfigStorage>();
-            if (save)
+            if (save) // As part of the mod stuff, add a previous config section to load
             {
                 if (home)
-                    comp?.SaveConfigs(configs, nutritionTarget, paused, insectsAllow, humanlikeAllow, twistedAllow, includeAnimalProducts);
+                    comp?.SaveConfigs(curConfig, paused);
             }
             else
                 comp?.ResetConfigs();
@@ -361,21 +351,15 @@ namespace AutoHuntManager
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref home, "home", false);
-            Scribe_Values.Look(ref save, "save", true);
-            Scribe_Values.Look(ref paused, "paused", false);
-            Scribe_Values.Look(ref insectsAllow, "insectsAllow", false);
-            Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
-            Scribe_Values.Look(ref twistedAllow, "twistedAllow", false);
-            Scribe_Values.Look(ref includeAnimalProducts, "includeAnimalProducts", true);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 7.5f);
-            Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);
+            Scribe_Values.Look(ref home, "home");
+            Scribe_Deep.Look(ref curConfig, "curConfig");
+            Scribe_Values.Look(ref paused, "paused");
             Scribe_Collections.Look(ref forbiddenThings, "forbiddenThings", LookMode.Reference);
             Scribe_Collections.Look(ref forbiddenHunts, "forbiddenHunts", LookMode.Reference);
             
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
-                if (configs.RemoveAll(x => x.animal == null || x.animal.IsCorpse) != 0)
+                if (curConfig.configs.RemoveAll(x => x.animal == null || x.animal.IsCorpse) != 0)
                     Log.Warning("Some auto-hunt configs had null animals after loading.");
                 TryPopulateMissingAnimals();
                 CleanUpForbidden();
@@ -405,10 +389,10 @@ namespace AutoHuntManager
 
         protected void TryPopulateMissingAnimals()
         {
-            HashSet<ThingDef> hashSet = new HashSet<ThingDef>(configs.Select(c => c.animal));
+            var hashSet = new HashSet<ThingDef>(curConfig.configs.Select(c => c.animal));
             foreach (ThingDef allDef in DefDatabase<ThingDef>.AllDefs)
                 if (allDef.race != null && allDef.race.Animal && !allDef.race.Dryad && !allDef.IsCorpse && !hashSet.Contains(allDef))
-                    configs.Add(new AutoHuntConfig
+                    curConfig.configs.Add(new AutoHuntConfig
                     {
                         animal = allDef
                     });
@@ -416,7 +400,7 @@ namespace AutoHuntManager
 
         protected void ResetConfigs()
         {
-            configs = new List<AutoHuntConfig>();
+            curConfig.configs = new List<AutoHuntConfig>();
             TryPopulateMissingAnimals();
         }
 
@@ -458,9 +442,8 @@ namespace AutoHuntManager
 
             CleanUpForbidden();
 
-            if (!hunting.EnumerableNullOrEmpty())
-                foreach (var animal in hunting)
-                    num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
+            if (!hunting.EnumerableNullOrEmpty()) 
+                num += hunting.Sum(animal => animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition));
 
             // See if there are any animals we absolutely need to hunt no matter what
             if (!ForcedAnimalsToHunt.NullOrEmpty())
@@ -473,7 +456,7 @@ namespace AutoHuntManager
                 }
 
             // If existing hunts are enough to put us above the target, don't bother checking anything else
-            if (num >= nutritionTarget)
+            if (num >= curConfig.nutritionTarget)
                 return;
 
             // If the map doesn't generally support wild animals, then the player is on their own
@@ -482,8 +465,8 @@ namespace AutoHuntManager
 
             // Locate all the viable meat
             var rawMeat = map.listerThings.GetAllThings(f => ValidFood(f) &&
-                (f.def.IsMeat || (includeAnimalProducts && (f.HasThingCategory(ThingCategoryDefOf.EggsUnfertilized) || f.HasThingCategory(AutoHuntDefOf.AnimalProductRaw)))) && 
-                (twistedAllow || !ModsConfig.AnomalyActive || f.def != ThingDefOf.Meat_Twisted));
+                (f.def.IsMeat || (curConfig.includeAnimalProducts && (f.HasThingCategory(ThingCategoryDefOf.EggsUnfertilized) || f.HasThingCategory(AutoHuntDefOf.AnimalProductRaw)))) && 
+                (curConfig.twistedAllow || !ModsConfig.AnomalyActive || f.def != ThingDefOf.Meat_Twisted));
 
             // Start with counting all the meat laying around claimed because it's the easiest to handle
             var availableMeat = rawMeat.Where(m => !m.IsForbidden(Faction.OfPlayer));
@@ -491,14 +474,14 @@ namespace AutoHuntManager
                 foreach (var meat in availableMeat)
                 {
                     num += meat.GetStatValue(StatDefOf.Nutrition) * meat.stackCount;
-                    if (num >= nutritionTarget)
+                    if (num >= curConfig.nutritionTarget)
                         return;
                 }
 
             // Locate all viable corpses
             var corpses = map.listerThings.GetAllThings(f => f is Corpse c && 
                 c.InnerPawn.RaceProps.IsFlesh && ValidFood(f) &&
-                (twistedAllow || !c.InnerPawn.RaceProps.IsAnomalyEntity));
+                (curConfig.twistedAllow || !c.InnerPawn.RaceProps.IsAnomalyEntity));
 
             // Check for claimed corpses that may be waiting for butchery
             var availableCorpses = corpses.Where(c => !c.IsForbidden(Faction.OfPlayer));
@@ -507,7 +490,7 @@ namespace AutoHuntManager
                 {
                     var corpse = thing as Corpse;
                     num += corpse.InnerPawn.GetStatValue(StatDefOf.MeatAmount) * corpse.InnerPawn.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
-                    if (num >= nutritionTarget)
+                    if (num >= curConfig.nutritionTarget)
                         return;
                 }
 
@@ -519,7 +502,7 @@ namespace AutoHuntManager
                     num += meat.GetStatValue(StatDefOf.Nutrition) * meat.stackCount;
                     meat.SetForbidden(false);
                     forbiddenThings.Add(meat);
-                    if (num >= nutritionTarget)
+                    if (num >= curConfig.nutritionTarget)
                         return;
                 }
 
@@ -532,7 +515,7 @@ namespace AutoHuntManager
                     num += corpse.InnerPawn.GetStatValue(StatDefOf.MeatAmount) * corpse.InnerPawn.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
                     corpse.SetForbidden(false);
                     forbiddenThings.Add(corpse);
-                    if (num >= nutritionTarget)
+                    if (num >= curConfig.nutritionTarget)
                         return;
                 }
 
@@ -564,7 +547,7 @@ namespace AutoHuntManager
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
-                            if (num >= nutritionTarget)
+                            if (num >= curConfig.nutritionTarget)
                                 return;
                         }
                     }
@@ -578,7 +561,7 @@ namespace AutoHuntManager
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
-                            if (num >= nutritionTarget)
+                            if (num >= curConfig.nutritionTarget)
                                 return;
                         }
                     }
@@ -592,7 +575,7 @@ namespace AutoHuntManager
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
-                            if (num >= nutritionTarget)
+                            if (num >= curConfig.nutritionTarget)
                                 return;
                         }
                     }
@@ -606,7 +589,7 @@ namespace AutoHuntManager
                         if (ValidPrey(animal))
                         {
                             num += animal.GetStatValue(StatDefOf.MeatAmount) * animal.RaceProps.meatDef.GetStatValueAbstract(StatDefOf.Nutrition);
-                            if (num >= nutritionTarget)
+                            if (num >= curConfig.nutritionTarget)
                                 return;
                         }
                     }
@@ -614,14 +597,14 @@ namespace AutoHuntManager
 
             bool ValidPrey(Pawn a)
             {
-                return (humanlikeAllow || !a.RaceProps.Humanlike) &&
-                    (insectsAllow || !a.RaceProps.Insect);
+                return (curConfig.humanlikeAllow || !a.RaceProps.Humanlike) &&
+                    (curConfig.insectsAllow || !a.RaceProps.Insect);
             }
 
             bool ValidFood(Thing t)
             {
-                return (humanlikeAllow || !FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(t))
-                    && (insectsAllow || !FoodUtility.IsInsectCorpseOrInsectMeatIngredient(t));
+                return (curConfig.humanlikeAllow || !FoodUtility.IsHumanlikeCorpseOrHumanlikeMeatOrIngredient(t))
+                    && (curConfig.insectsAllow || !FoodUtility.IsInsectCorpseOrInsectMeatIngredient(t));
             }
         }
     }

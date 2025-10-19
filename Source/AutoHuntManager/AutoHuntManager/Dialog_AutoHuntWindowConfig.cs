@@ -8,18 +8,19 @@ namespace AutoHuntManager
     {
         protected MainTabWindow_AutoHunt huntWindow;
 
-        public override Vector2 InitialSize => new Vector2(100f, 140f);
+        public override Vector2 InitialSize => new Vector2(325f, 220f);
 
         public Dialog_AutoHuntWindowConfig(MainTabWindow_AutoHunt huntWindow)
         {
             this.huntWindow = huntWindow;
             doCloseX = true;
             optionalTitle = "AutoHuntViewConfig".Translate();
+            draggable = true;
         }
 
         public override void DoWindowContents(Rect inRect)
         {
-            var viewRect = inRect.ContractedBy(5f);
+            var viewRect = inRect.ContractedBy(1f);
             Widgets.BeginGroup(viewRect);
             CheckBox("AutoHuntHideAbsent".Translate(), "AutoHuntHideAbsentTooltip".Translate(), 0f, ref huntWindow.hideAbsent, true);
             CheckBox("AutoHuntHideInsect".Translate(), "AutoHuntHideInsectTooltip".Translate(), 35f, ref huntWindow.hideInsect, true);
@@ -41,29 +42,45 @@ namespace AutoHuntManager
                     next = ConfigDisplay.All;
                     break;
             }
-            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: viewRect.width - 10f))
+            cycle.Label("AutoHuntShow".Translate(), 100f, "AutoHuntDisplayCycle".Translate());
+            if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: viewRect.xMax - cycle.FinalX - 5f))
             {
                 huntWindow.curDisplay = next;
                 huntWindow.RecalculateAnimals();
             }
-            Rect search = new Rect(viewRect)
+            
+            Rect name = new Rect(viewRect)
             {
-                yMin = cycle.FinalY
+                yMin = cycle.FinalY + 40f,
+                yMax = cycle.FinalY + 65f
             };
-            search.xMax -= 10f;
-            huntWindow.nameSearch = Widgets.TextField(search, huntWindow.nameSearch);
+            Widgets.Label(name, "AutoHuntName".Translate());
+            Rect search = new Rect(name)
+            {
+                xMin = viewRect.xMin + 103f,
+                xMax = viewRect.xMax - 32f
+            };
+            var nameSearch = huntWindow.nameSearch;
+            nameSearch = Widgets.TextField(search, nameSearch);
             Rect button = new Rect(search)
             {
-                xMin = search.xMax,
-                xMax = search.xMax + 20f
+                xMin = search.xMax + 5f,
+                xMax = viewRect.xMax - 1f
             };
             if (Widgets.ButtonImage(button, TexButton.CloseXSmall, Color.white, GenUI.MouseoverColor))
-                huntWindow.nameSearch = string.Empty;
+                nameSearch = string.Empty;
+            
+            if (nameSearch != huntWindow.nameSearch)
+            {
+                huntWindow.nameSearch = nameSearch;
+                huntWindow.RecalculateAnimals();
+            }
+            Widgets.EndGroup();
 
             void CheckBox(string label, string tooltip, float y, ref bool toggle, bool recalc = false)
             {
                 WidgetRow row = new WidgetRow(0f, y);
-                row.Label(label, viewRect.width - 25f, tooltip);
+                row.Label(label, viewRect.width - 30f, tooltip);
                 bool old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)

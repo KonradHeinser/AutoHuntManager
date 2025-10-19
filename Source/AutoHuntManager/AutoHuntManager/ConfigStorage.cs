@@ -10,46 +10,26 @@ namespace AutoHuntManager
             ResetConfigs();
         }
 
-        public List<AutoHuntConfig> configs = new List<AutoHuntConfig>();
-        public bool paused = false;
-        public bool insectsAllow = false;
-        public bool humanlikeAllow = false;
-        public bool twistedAllow = false;
-        public bool includeAnimalProducts = true;
-        public float nutritionTarget = 7.5f;
+        public ConfigSet prevConfigs;
+        public bool paused;
 
-        public void SaveConfigs(List<AutoHuntConfig> configs, float nutritionTarget, bool paused, bool insectsAllow, bool humanlikeAllow, bool twistedAllow, bool includeAnimalProducts)
+        public void SaveConfigs(ConfigSet prev, bool pause)
         {
-            this.configs = configs;
-            this.nutritionTarget = nutritionTarget;
-            this.paused = paused;
-            this.insectsAllow = insectsAllow;
-            this.humanlikeAllow = humanlikeAllow;
-            this.twistedAllow = twistedAllow;
-            this.includeAnimalProducts = includeAnimalProducts;
+            prevConfigs = prev;
+            paused = pause;
         }
 
         public void ResetConfigs()
         {
-            configs = new List<AutoHuntConfig>();
+            prevConfigs = new ConfigSet();
             paused = false;
-            insectsAllow = false;
-            humanlikeAllow = false;
-            twistedAllow = false;
-            includeAnimalProducts = true;
-            nutritionTarget = 7.5f;
         }
 
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref paused, "paused", false);
-            Scribe_Values.Look(ref insectsAllow, "insectsAllow", false);
-            Scribe_Values.Look(ref humanlikeAllow, "humanlikeAllow", false);
-            Scribe_Values.Look(ref nutritionTarget, "nutritionTarget", 7.5f);
-            Scribe_Values.Look(ref twistedAllow, "twistedAllow", false);
-            Scribe_Values.Look(ref includeAnimalProducts, "includeAnimalProducts", true);
-            Scribe_Collections.Look(ref configs, "configs", LookMode.Deep);
+            Scribe_Deep.Look(ref prevConfigs, "prevConfigs");
+            Scribe_Values.Look(ref paused, "paused");
         }
     }
 }

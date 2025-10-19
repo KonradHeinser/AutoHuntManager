@@ -36,17 +36,9 @@ namespace AutoHuntManager
             }
         }
 
-        protected HuntManager manager = null;
+        protected HuntManager manager;
 
-        protected HuntManager Manager
-        {
-            get
-            {
-                if (manager == null)
-                    manager = Find.CurrentMap?.GetComponent<HuntManager>();
-                return manager;
-            }
-        }
+        protected HuntManager Manager => manager ?? (manager = Find.CurrentMap?.GetComponent<HuntManager>());
 
         private Vector2 scrollPos;
 
@@ -82,19 +74,23 @@ namespace AutoHuntManager
             animalCounts.Clear();
             var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
 
-            foreach (AutoHuntConfig config in Manager.configs)
+            foreach (AutoHuntConfig config in Manager.curConfig.configs)
             {
                 AnimalCountRecord value = default;
                 CountAnimals(animals, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
             }
-            configsOrdered = (from c in Manager.configs 
+            configsOrdered = (from c in Manager.curConfig.configs
                               where ManageDisplay(c.animal) && (!hideInsect || !c.animal.race.Insect) &&
                                 (!hideAbsent || animalCounts[c.animal].total > 0) && 
-                                (nameSearch.NullOrEmpty() || c.animal.label.Contains(nameSearch))
+                                (nameSearch.NullOrEmpty() || c.animal.label.ToLower().Contains(nameSearch.ToLower()))
                               orderby animalCounts[c.animal].total descending, c.animal.label
                               select c).ToList();
 
+            
+            Manager.forgettableDirty = true;
+            SetInitialSizeAndPosition();
+            
             bool ManageDisplay(ThingDef animal)
             {
                 switch (curDisplay)
@@ -103,19 +99,18 @@ namespace AutoHuntManager
                         return Manager.AnyLimits[animal];
                     case ConfigDisplay.Unconfigured:
                         return !Manager.AnyLimits[animal];
+                    case ConfigDisplay.All:
                     default:
                         return true;
                 }
             }
-            Manager.forgettableDirty = true;
-            SetInitialSizeAndPosition();
         }
 
         private float labelWidth = 100f;
 
-        public override void Close(bool doCloseSound = true)
+        public override void PostClose()
         {
-            base.Close(doCloseSound);
+            base.PostClose();
             Find.WindowStack.TryRemoveAssignableFromType(typeof(Dialog_AutoHuntWindowConfig), false);
         }
 
@@ -172,7 +167,8 @@ namespace AutoHuntManager
                 yMin = rect.yMax + 5f,
                 xMax = inRect.xMax + 25f // Slight increase in width because we don't have to worry about the bar
             };
-
+            // Height needs tweaked a lot because it's going to just be buttons in a row
+            // Button width should be width / 6f, with gaps of width / 30f 
             GUI.color = color;
 
             // Pause, Start Search, and Forget Forbidden
@@ -209,7 +205,7 @@ namespace AutoHuntManager
 
             Widgets.BeginGroup(display);
             WidgetRow config = new WidgetRow(0f, 35f);
-            if (config.ButtonText("AutoHuntViewConfig".Translate()))
+            if (config.ButtonText("AutoHuntViewConfig".Translate(), "AutoHuntViewConfigTooltip".Translate()))
                 Find.WindowStack.Add(new Dialog_AutoHuntWindowConfig(this));
             Widgets.EndGroup();
 
@@ -230,23 +226,22 @@ namespace AutoHuntManager
                 yMin = nutLabel.yMin,
                 yMax = nutLabel.yMax
             };
-            float nut = Manager.nutritionTarget;
-            string buffer = nut.ToString();
-            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer, 0f);
-            Manager.nutritionTarget = nut;
+            float nut = Manager.curConfig.nutritionTarget;
+            var buffer = nut.ToString();
+            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer);
+            Manager.curConfig.nutritionTarget = nut;
 
-            CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.includeAnimalProducts);
-            CheckBox("AutoHuntRememberConfigs".Translate(), "AutoHuntRememberConfigsTooltip".Translate(), 70f, ref Manager.save);
+            CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.curConfig.includeAnimalProducts);
             Widgets.EndGroup();
 
             // Include Humanlike, Insect, and Twisted on the right
             Widgets.BeginGroup(lower); // lower is already set to the rightmost area at this point
-            CheckBox("AutoHuntIncludeInsects".Translate(), "AutoHuntIncludeInsectsTooltip".Translate(), 0f, ref Manager.insectsAllow);
-            CheckBox("AutoHuntIncludeHumanlike".Translate(), "AutoHuntIncludeHumanlikeTooltip".Translate(), 35f, ref Manager.humanlikeAllow);
+            CheckBox("AutoHuntIncludeInsects".Translate(), "AutoHuntIncludeInsectsTooltip".Translate(), 0f, ref Manager.curConfig.insectsAllow);
+            CheckBox("AutoHuntIncludeHumanlike".Translate(), "AutoHuntIncludeHumanlikeTooltip".Translate(), 35f, ref Manager.curConfig.humanlikeAllow);
             if (ModsConfig.AnomalyActive)
-                CheckBox("AutoHuntIncludeTwisted".Translate(), "AutoHuntIncludeTwistedTooltip".Translate(), 70f, ref Manager.twistedAllow);
+                CheckBox("AutoHuntIncludeTwisted".Translate(), "AutoHuntIncludeTwistedTooltip".Translate(), 70f, ref Manager.curConfig.twistedAllow);
             Widgets.EndGroup();
-
+            // You may want to make a save menu here (wink wink)
             Text.Font = font;
             Text.Anchor = anchor;
 

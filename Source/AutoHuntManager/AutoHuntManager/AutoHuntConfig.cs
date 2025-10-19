@@ -48,8 +48,8 @@ namespace AutoHuntManager
             Scribe_Values.Look(ref maxMalesYoung, "maxMalesYoung", -1);
             Scribe_Values.Look(ref maxFemales, "maxFemales", -1);
             Scribe_Values.Look(ref maxFemalesYoung, "maxFemalesYoung", -1);
-            Scribe_Values.Look(ref allowHuntPregnant, "allowHuntPregnant", false);
-            Scribe_Values.Look(ref forceHunt, "forceHunt", false);
+            Scribe_Values.Look(ref allowHuntPregnant, "allowHuntPregnant");
+            Scribe_Values.Look(ref forceHunt, "forceHunt");
         }
     }
 }
