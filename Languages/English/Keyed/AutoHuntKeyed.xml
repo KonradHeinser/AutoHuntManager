@@ -2,6 +2,7 @@
 <LanguageData>
 	<!--View Config-->
 	<AutoHuntViewConfig>Manager Display</AutoHuntViewConfig>
+	<AutoHuntViewConfigTooltip>Alter what this window is showing you. None of these settings alter what the auto-hunt manager is doing, they just filters what actually gets shown on the animals list.</AutoHuntViewConfigTooltip>
 	<AutoHuntName>Name</AutoHuntName>
 	<AutoHuntShow>Show</AutoHuntShow>
 	<AutoHuntHideAbsent>Hide Absent</AutoHuntHideAbsent>
@@ -17,12 +18,12 @@
 	<AutoHuntRawFood>Corpses and Items</AutoHuntRawFood>
 	<AutoHuntPauseTooltip>This toggles whether or not the manager will do its periodic checks.</AutoHuntPauseTooltip>
 	<AutoHuntDoCheck>Check Food Now</AutoHuntDoCheck>
-	<AutoHuntDoCheckTooltip>Causes the stockpile check to happen immediately, potentially unforbidding corpses/raw meat if available or starting hunts if there isn't enough raw meat available.\n\nIf you are finding that your hunters aren't keeping up with consumption, it is recommended that you increase the target nutrition.</AutoHuntDoCheckTooltip>
+	<AutoHuntDoCheckTooltip>Causes a stockpile check to happen immediately, potentially unforbidding corpses/raw meat if available or starting hunts if there isn't enough raw meat available. This acts the same as the periodic checks, but will not interrupt or delay those.\n\nIf you are finding that your hunters aren't keeping up with consumption, it is recommended that you increase the target nutrition.</AutoHuntDoCheckTooltip>
 	<AutoHuntForget>Unforbid</AutoHuntForget>
 	<AutoHuntForgetTooltip>When an item is marked unforbidden or an animal is marked for hunting by the manager, it is put on a forbidden list within the manager to allow you to forbid it again/stop it from being hunted. This button allows you to make the manager forget some or all of the things on those lists.\n\nIf this button is grayed out, that means there is nothing in the manager forbidden list to forget. The manager will automatically clear its forbidden list of used/destroyed items and dead/missing animals periodically, so this button won't have any practical use in most cases.</AutoHuntForgetTooltip>
 
 
-	<AutoHuntNutritionTooltip>This is the amount of raw meat based nutrition the manager will try to make sure is available. It starts with adding up the meat from existing hunting targets and forced hunting targets along with existing unforbidden corpses and raw meat, and if those are not enough it will look for forbidden meat and corpses it hasn't tried to claim previously, then start hunting based on the limits you specify.7.5 nutrition is usually 2 stacks of meat.\n\nDue to how poorly Unity seems to handle boxes with non-whole numbers, any time you use a number with a decimal I recommend starting with the number without a decimal (i.e. 115), then add the decimal (i.e. 11.5). This won't prevent all of the issues that may occur, but will help mitigate Unity's box panic.</AutoHuntNutritionTooltip>
+	<AutoHuntNutritionTooltip>This is the amount of raw meat based nutrition the manager will try to make sure is available. If there isn't enough stockpiled or already marked for hunting, then a map-wide check will be made for new forbidden meat and corpses, and if there still isn't enough, animals will start being hunted. 7.5 nutrition is usually 2 stacks of meat.\n\nDue to how poorly Unity seems to handle boxes with non-whole numbers, any time you use a number with a decimal I recommend starting with the number without a decimal (i.e. 115), then add the decimal (i.e. 11.5). This won't prevent all of the issues that may occur, but will help mitigate Unity's box panic.</AutoHuntNutritionTooltip>
 	<AutoHuntIncludeProducts>Include Products</AutoHuntIncludeProducts>
 	<AutoHuntIncludeProductsTooltip>Determines if the nutrition check should include animal products like milk, unfertilized eggs, and insect jelly.</AutoHuntIncludeProductsTooltip>
 	<AutoHuntRememberConfigs>Remember Configs</AutoHuntRememberConfigs>

@@ -38,7 +38,7 @@ namespace AutoHuntManager
 
         protected HuntManager manager;
 
-        protected HuntManager Manager => manager ?? (manager = Find.CurrentMap?.GetComponent<HuntManager>());
+        public HuntManager Manager => manager ?? (manager = Find.CurrentMap?.GetComponent<HuntManager>());
 
         private Vector2 scrollPos;
 
@@ -112,6 +112,7 @@ namespace AutoHuntManager
         {
             base.PostClose();
             Find.WindowStack.TryRemoveAssignableFromType(typeof(Dialog_AutoHuntWindowConfig), false);
+            Find.WindowStack.TryRemoveAssignableFromType(typeof(Dialog_AutoHuntNutritionConfig), false);
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -207,6 +208,9 @@ namespace AutoHuntManager
             WidgetRow config = new WidgetRow(0f, 35f);
             if (config.ButtonText("AutoHuntViewConfig".Translate(), "AutoHuntViewConfigTooltip".Translate()))
                 Find.WindowStack.Add(new Dialog_AutoHuntWindowConfig(this));
+            WidgetRow nutritionConfig = new WidgetRow(0f, 70f);
+            if (nutritionConfig.ButtonText("AutoHuntNutritionConfig".Translate(), "AutoHuntNutritionConfigTooltip".Translate()))
+                Find.WindowStack.Add(new Dialog_AutoHuntNutritionConfig(this));
             Widgets.EndGroup();
 
             // Basic Configurations in the middle
@@ -215,65 +219,26 @@ namespace AutoHuntManager
                 xMax = lower.xMin + width
             };
             lower.xMin = basicConfigs.xMax; // Remove the basic configs rect from the remaining space
-            Widgets.BeginGroup(basicConfigs);
-            WidgetRow nutrition = new WidgetRow(0f, 0f);
-            nutrition.Gap(gapAmount);
-            var nutLabel = nutrition.Label("Nutrition".Translate(), basicConfigs.width - gapAmount - 30f, "AutoHuntNutritionTooltip".Translate());
-            var nutFieldRect = new Rect()
-            {
-                xMin = nutLabel.xMax,
-                xMax = nutLabel.xMax + 40f,
-                yMin = nutLabel.yMin,
-                yMax = nutLabel.yMax
-            };
-            float nut = Manager.curConfig.nutritionTarget;
-            var buffer = nut.ToString();
-            Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer);
-            Manager.curConfig.nutritionTarget = nut;
-
-            CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), 35f, ref Manager.curConfig.includeAnimalProducts);
-            Widgets.EndGroup();
-
-            // Include Humanlike, Insect, and Twisted on the right
-            Widgets.BeginGroup(lower); // lower is already set to the rightmost area at this point
-            CheckBox("AutoHuntIncludeInsects".Translate(), "AutoHuntIncludeInsectsTooltip".Translate(), 0f, ref Manager.curConfig.insectsAllow);
-            CheckBox("AutoHuntIncludeHumanlike".Translate(), "AutoHuntIncludeHumanlikeTooltip".Translate(), 35f, ref Manager.curConfig.humanlikeAllow);
-            if (ModsConfig.AnomalyActive)
-                CheckBox("AutoHuntIncludeTwisted".Translate(), "AutoHuntIncludeTwistedTooltip".Translate(), 70f, ref Manager.curConfig.twistedAllow);
-            Widgets.EndGroup();
             // You may want to make a save menu here (wink wink)
             Text.Font = font;
             Text.Anchor = anchor;
-
-            void CheckBox(string label, string tooltip, float y, ref bool toggle, bool recalc = false)
-            {
-                WidgetRow row = new WidgetRow(0f, y);
-                row.Gap(gapAmount);
-                row.Label(label, width - 25f - gapAmount, tooltip);
-                bool old = toggle;
-                Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
-                if (recalc && toggle != old)
-                    RecalculateAnimals();
-            }
         }
 
         private void CountAnimals(List<Pawn> pawns, AutoHuntConfig config, ThingDef animal, out int currentMales, out int currentMalesYoung, out int currentFemales, out int currentFemalesYoung, out int currentTotal, out int currentPregnant)
         {
             currentMales = (currentMalesYoung = (currentFemales = (currentFemalesYoung = (currentTotal = (currentPregnant = 0)))));
             if (pawns.NullOrEmpty()) return;
-            foreach (Pawn spawnedColonyAnimal in pawns)
+            foreach (var spawnedColonyAnimal in pawns.Where(spawnedColonyAnimal => spawnedColonyAnimal.def == animal))
             {
-                if (spawnedColonyAnimal.def != animal)
-                    continue;
-
-                if (spawnedColonyAnimal.gender == Gender.Male)
-                    if (spawnedColonyAnimal.ageTracker.CurLifeStage.reproductive)
-                        currentMales++;
-                    else
-                        currentMalesYoung++;
-                else if (spawnedColonyAnimal.gender == Gender.Female)
+                switch (spawnedColonyAnimal.gender)
                 {
-                    if (spawnedColonyAnimal.ageTracker.CurLifeStage.reproductive)
+                    case Gender.Male when spawnedColonyAnimal.ageTracker.CurLifeStage.reproductive:
+                        currentMales++;
+                        break;
+                    case Gender.Male:
+                        currentMalesYoung++;
+                        break;
+                    case Gender.Female when spawnedColonyAnimal.ageTracker.CurLifeStage.reproductive:
                     {
                         Hediff firstHediffOfDef = spawnedColonyAnimal.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
                         if (firstHediffOfDef != null && firstHediffOfDef.Visible)
@@ -281,13 +246,17 @@ namespace AutoHuntManager
                             currentPregnant++;
                             if (!config.allowHuntPregnant)
                                 continue;
-                            currentFemales++;
                         }
-                        else
-                            currentFemales++;
+
+                        currentFemales++;
+                        break;
                     }
-                    else
+                    case Gender.Female:
                         currentFemalesYoung++;
+                        break;
+                    case Gender.None:
+                    default:
+                        break;                
                 }
 
                 currentTotal++;
@@ -487,16 +456,16 @@ namespace AutoHuntManager
 
                 return labelCap;
             }
-        }
+            
+            string DevTipPartForPawn(Pawn pawn)
+            {
+                string text = pawn.LabelShortCap + " " + pawn.gender.GetLabel() + " (" + pawn.ageTracker.AgeBiologicalYears + "y)";
+                Hediff firstHediffOfDef = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
+                if (firstHediffOfDef != null)
+                    text = text + ", pregnant (" + firstHediffOfDef.Severity.ToStringPercent() + ")";
 
-        static string DevTipPartForPawn(Pawn pawn)
-        {
-            string text = pawn.LabelShortCap + " " + pawn.gender.GetLabel() + " (" + pawn.ageTracker.AgeBiologicalYears + "y)";
-            Hediff firstHediffOfDef = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
-            if (firstHediffOfDef != null)
-                text = text + ", pregnant (" + firstHediffOfDef.Severity.ToStringPercent() + ")";
-
-            return text;
+                return text;
+            }
         }
     }
 }

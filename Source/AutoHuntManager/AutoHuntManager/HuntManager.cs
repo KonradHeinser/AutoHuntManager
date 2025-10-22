@@ -37,9 +37,8 @@ namespace AutoHuntManager
                     forgettableDirty = true;
                     forbiddenAnimals.Clear();
                     if (!forbiddenHunts.NullOrEmpty())
-                        foreach (var a in forbiddenHunts)
-                            if (!forbiddenAnimals.Contains(a.def))
-                                forbiddenAnimals.Add(a.def);
+                        foreach (var a in forbiddenHunts.Where(a => !forbiddenAnimals.Contains(a.def)))
+                            forbiddenAnimals.Add(a.def);
                 }
                 return forbiddenAnimals;
             }
@@ -57,16 +56,10 @@ namespace AutoHuntManager
                     forgettableDirty = false;
                     forgettable.Clear();
                     if (!ForbiddenAnimals.NullOrEmpty() || !forbiddenThings.NullOrEmpty())
-                        forgettable.Add(new FloatMenuOption("AutoHuntAll".Translate(), delegate
-                        {
-                            ForgetForbidden();
-                        }));
+                        forgettable.Add(new FloatMenuOption("AutoHuntAll".Translate(), ForgetForbidden));
 
                     if (!forbiddenThings.NullOrEmpty())
-                        forgettable.Add(new FloatMenuOption("AutoHuntRawFood".Translate(), delegate
-                        {
-                            ForgetForbiddenThings();
-                        }));
+                        forgettable.Add(new FloatMenuOption("AutoHuntRawFood".Translate(), ForgetForbiddenThings));
 
                     if (!ForbiddenAnimals.NullOrEmpty())
                     {
@@ -119,11 +112,8 @@ namespace AutoHuntManager
                     if (animals.EnumerableNullOrEmpty())
                         return;
 
-                    foreach (AutoHuntConfig config in curConfig.configs)
+                    foreach (var config in curConfig.configs.Where(config => config.AnyLimit))
                     {
-                        if (!config.AnyLimit)
-                            continue;
-
                         tmpAnimals.Clear();
                         tmpAnimalsMale.Clear();
                         tmpAnimalsMaleYoung.Clear();
@@ -135,13 +125,15 @@ namespace AutoHuntManager
                             if (spawnedAnimal.def != config.animal)
                                 continue;
 
-                            if (spawnedAnimal.gender == Gender.Male)
-                                if (spawnedAnimal.ageTracker.CurLifeStage.reproductive)
+                            switch (spawnedAnimal.gender)
+                            {
+                                case Gender.Male when spawnedAnimal.ageTracker.CurLifeStage.reproductive:
                                     tmpAnimalsMale.Add(spawnedAnimal);
-                                else
+                                    break;
+                                case Gender.Male:
                                     tmpAnimalsMaleYoung.Add(spawnedAnimal);
-                            else if (spawnedAnimal.gender == Gender.Female)
-                                if (spawnedAnimal.ageTracker.CurLifeStage.reproductive)
+                                    break;
+                                case Gender.Female when spawnedAnimal.ageTracker.CurLifeStage.reproductive:
                                 {
                                     if (!spawnedAnimal.health.hediffSet.HasHediff(HediffDefOf.Pregnant))
                                         tmpAnimalsFemale.Add(spawnedAnimal);
@@ -150,9 +142,16 @@ namespace AutoHuntManager
                                         tmpAnimalsPregnant.Add(spawnedAnimal);
                                         continue;
                                     }
+
+                                    break;
                                 }
-                                else
+                                case Gender.Female:
                                     tmpAnimalsFemaleYoung.Add(spawnedAnimal);
+                                    break;
+                                case Gender.None:
+                                default:
+                                    break;
+                            }
                             tmpAnimals.Add(spawnedAnimal);
                         }
 

@@ -1,4 +1,4 @@
-﻿using RimWorld;
+﻿using System;
 using UnityEngine;
 using Verse;
 
@@ -10,23 +10,31 @@ namespace AutoHuntManager
 
         public override Vector2 InitialSize => new Vector2(325f, 220f);
 
-        public Dialog_AutoHuntWindowConfig(MainTabWindow_AutoHunt huntWindow)
+        public Dialog_AutoHuntWindowConfig(MainTabWindow_AutoHunt mainTabWindow)
         {
-            this.huntWindow = huntWindow;
+            huntWindow = mainTabWindow;
             doCloseX = true;
             optionalTitle = "AutoHuntViewConfig".Translate();
             draggable = true;
         }
 
+        protected override void SetInitialSizeAndPosition()
+        {
+            base.SetInitialSizeAndPosition();
+            var initialX = MathF.Min(UI.screenWidth - 10f - InitialSize.x, huntWindow.windowRect.xMax + 10f);
+            windowRect = new Rect(initialX, UI.screenHeight - InitialSize.y - 60f, InitialSize.x, InitialSize.y).Rounded();
+        }
+
         public override void DoWindowContents(Rect inRect)
         {
             var viewRect = inRect.ContractedBy(1f);
+            var num = 0;
             Widgets.BeginGroup(viewRect);
-            CheckBox("AutoHuntHideAbsent".Translate(), "AutoHuntHideAbsentTooltip".Translate(), 0f, ref huntWindow.hideAbsent, true);
-            CheckBox("AutoHuntHideInsect".Translate(), "AutoHuntHideInsectTooltip".Translate(), 35f, ref huntWindow.hideInsect, true);
+            CheckBox("AutoHuntHideAbsent".Translate(), "AutoHuntHideAbsentTooltip".Translate(), ref huntWindow.hideAbsent, true);
+            CheckBox("AutoHuntHideInsect".Translate(), "AutoHuntHideInsectTooltip".Translate(), ref huntWindow.hideInsect, true);
             WidgetRow cycle = new WidgetRow(0f, 70f);
-            string text = string.Empty;
-            ConfigDisplay next = ConfigDisplay.All;
+            string text;
+            ConfigDisplay next;
             switch (huntWindow.curDisplay)
             {
                 case ConfigDisplay.All:
@@ -41,6 +49,8 @@ namespace AutoHuntManager
                     text = "AutoHuntUnconfigured".Translate();
                     next = ConfigDisplay.All;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             cycle.Label("AutoHuntShow".Translate(), 100f, "AutoHuntDisplayCycle".Translate());
             if (cycle.ButtonText(text, "AutoHuntDisplayCycle".Translate(), fixedWidth: viewRect.xMax - cycle.FinalX - 5f))
@@ -77,14 +87,15 @@ namespace AutoHuntManager
             }
             Widgets.EndGroup();
 
-            void CheckBox(string label, string tooltip, float y, ref bool toggle, bool recalc = false)
+            void CheckBox(string label, string tooltip, ref bool toggle, bool recalc = false)
             {
-                WidgetRow row = new WidgetRow(0f, y);
+                WidgetRow row = new WidgetRow(0f, 35f * num);
                 row.Label(label, viewRect.width - 30f, tooltip);
                 bool old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)
                     huntWindow.RecalculateAnimals();
+                num++;
             }
         }
     }
