@@ -56,13 +56,16 @@ namespace AutoHuntManager
 
         public bool hideAbsent = true;
 
-        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(configsOrdered.Count * 30f + 215f, UI.screenHeight));
+        public override Vector2 RequestedTabSize => new Vector2(1000f, Mathf.Min(configsOrdered.Count * 30f + 140f, UI.screenHeight));
 
         public override void PreOpen()
         {
             base.PreOpen();
             if (Manager != null)
+            {
                 RecalculateAnimals();
+                Manager.forbiddenDirty = true;
+            }
             else
                 Log.Error("Attempted to open the auto hunt manager without the map component available");
         }
@@ -74,13 +77,13 @@ namespace AutoHuntManager
             animalCounts.Clear();
             var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
 
-            foreach (AutoHuntConfig config in Manager.curConfig.configs)
+            foreach (AutoHuntConfig config in Manager.config.configs)
             {
                 AnimalCountRecord value = default;
                 CountAnimals(animals, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
                 animalCounts.Add(config.animal, value);
             }
-            configsOrdered = (from c in Manager.curConfig.configs
+            configsOrdered = (from c in Manager.config.configs
                               where ManageDisplay(c.animal) && (!hideInsect || !c.animal.race.Insect) &&
                                 (!hideAbsent || animalCounts[c.animal].total > 0) && 
                                 (nameSearch.NullOrEmpty() || c.animal.label.ToLower().Contains(nameSearch.ToLower()))
@@ -127,13 +130,13 @@ namespace AutoHuntManager
                 RecalculateAnimals();
 
             Rect rect = new Rect(inRect);
-            rect.yMax -= 105f;
+            rect.yMax -= 45f;
             rect.yMin += 7f;
             Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
             };
-            viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count) + 65f);
+            viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count) + 48f);
             labelWidth = viewRect.width - 840f;
 
             Rect other = new Rect(rect)
@@ -163,63 +166,36 @@ namespace AutoHuntManager
             Text.Anchor = (TextAnchor)3;
             GUI.color = Color.gray;
 
-            Rect lower = new Rect(inRect) // The lower area of the manager which will be split up
+            Rect lower = new Rect(rect)
             {
-                yMin = rect.yMax + 5f,
-                xMax = inRect.xMax + 25f // Slight increase in width because we don't have to worry about the bar
+                yMin = inRect.yMax - 30f,
+                yMax = inRect.yMax
             };
-            // Height needs tweaked a lot because it's going to just be buttons in a row
-            // Button width should be width / 6f, with gaps of width / 30f 
+
             GUI.color = color;
-
-            // Pause, Start Search, and Forget Forbidden
-            float gapAmount = 30f;
             Widgets.BeginGroup(lower);
-            var actionWidth = Mathf.Min(100f, lower.width / 4f);
-            WidgetRow pause = new WidgetRow(0f, 0f);
-            if (pause.ButtonText(Manager.paused ? "Paused".Translate().CapitalizeFirst() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: actionWidth))
+            WidgetRow buttons = new WidgetRow(0f, 0f);
+            float width = (lower.width - 110f) / 5f;
+
+            if (buttons.ButtonText(Manager.paused ? "Paused".Translate().CapitalizeFirst() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: width - 5f))
                 Manager.PauseToggle();
-
-            WidgetRow search = new WidgetRow(0f, 35f);
-            if (search.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth: actionWidth))
-                Manager.DesignateHunting();
-
-            WidgetRow forget = new WidgetRow(0f, 70f);
+            buttons.Gap(5f);
             if (Manager.Forgettable.NullOrEmpty())
                 GUI.color = Color.gray;
-            if (forget.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), actionWidth))
+            if (buttons.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), width - 5f))
                 Find.WindowStack.Add(new FloatMenu(Manager.Forgettable));
-            
             GUI.color = color;
-
-            Widgets.EndGroup();
-
-            lower.xMin += actionWidth + gapAmount * 1.5f;
-            var width = lower.width / 3f;
-
-            // Hiding options on the left
-            Rect display = new Rect(lower)
-            {
-                xMax = lower.xMin + width
-            };
-            lower.xMin += width; // Remove the display from the remaining space
-
-            Widgets.BeginGroup(display);
-            WidgetRow config = new WidgetRow(0f, 35f);
-            if (config.ButtonText("AutoHuntViewConfig".Translate(), "AutoHuntViewConfigTooltip".Translate()))
+            buttons.Gap(5f);
+            if (buttons.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth: width))
+                Manager.DesignateHunting();
+            buttons.Gap(5f);
+            if (buttons.ButtonText("AutoHuntViewConfig".Translate(), "AutoHuntViewConfigTooltip".Translate(), fixedWidth: width))
                 Find.WindowStack.Add(new Dialog_AutoHuntWindowConfig(this));
-            WidgetRow nutritionConfig = new WidgetRow(0f, 70f);
-            if (nutritionConfig.ButtonText("AutoHuntNutritionConfig".Translate(), "AutoHuntNutritionConfigTooltip".Translate()))
+            buttons.Gap(5f);
+            if (buttons.ButtonText("AutoHuntNutritionConfig".Translate(), "AutoHuntNutritionConfigTooltip".Translate(), fixedWidth: width))
                 Find.WindowStack.Add(new Dialog_AutoHuntNutritionConfig(this));
+            
             Widgets.EndGroup();
-
-            // Basic Configurations in the middle
-            Rect basicConfigs = new Rect(lower)
-            {
-                xMax = lower.xMin + width
-            };
-            lower.xMin = basicConfigs.xMax; // Remove the basic configs rect from the remaining space
-            // You may want to make a save menu here (wink wink)
             Text.Font = font;
             Text.Anchor = anchor;
         }
@@ -304,15 +280,9 @@ namespace AutoHuntManager
             int num = 0;
             foreach (Rect tmpGroupRect in tmpGroupRects)
             {
-                if (num % 2 == 1)
-                {
+                Widgets.DrawLightHighlight(tmpGroupRect);
+                if (num % 2 == 1) 
                     Widgets.DrawLightHighlight(tmpGroupRect);
-                    Widgets.DrawLightHighlight(tmpGroupRect);
-                }
-                else
-                {
-                    Widgets.DrawLightHighlight(tmpGroupRect);
-                }
 
                 GUI.color = Color.gray;
                 if (num > 0)

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using Verse;
 
 namespace AutoHuntManager
@@ -12,6 +14,16 @@ namespace AutoHuntManager
         public bool twistedAllow;
         public bool includeAnimalProducts = true;
 
+        public void CopyFrom(ConfigSet config)
+        {
+            configs = new List<AutoHuntConfig>(config.configs);
+            nutritionTarget = config.nutritionTarget;
+            insectsAllow = config.insectsAllow;
+            humanlikeAllow = config.humanlikeAllow;
+            twistedAllow = config.twistedAllow;
+            includeAnimalProducts = config.includeAnimalProducts;
+        }
+        
         public void ExposeData()
         {
             Scribe_Values.Look(ref insectsAllow, "insectsAllow");

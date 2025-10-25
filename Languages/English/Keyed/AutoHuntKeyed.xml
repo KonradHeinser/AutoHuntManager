@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-	<!--View Config-->
-	<AutoHuntViewConfig>Manager Display</AutoHuntViewConfig>
-	<AutoHuntViewConfigTooltip>Alter what this window is showing you. None of these settings alter what the auto-hunt manager is doing, they just filters what actually gets shown on the animals list.</AutoHuntViewConfigTooltip>
-	<AutoHuntName>Name</AutoHuntName>
+	<!--Nutrition Settings-->
+	<AutoHuntNutritionTooltip>This is the amount of raw meat based nutrition the manager will try to make sure is available. If there isn't enough stockpiled or already marked for hunting, then a map-wide check will be made for new forbidden meat and corpses, and if there still isn't enough, animals will start being hunted. 7.5 nutrition is usually 2 stacks of meat.\n\nDue to how poorly Unity seems to handle boxes with non-whole numbers, any time you use a number with a decimal I recommend starting with the number without a decimal (i.e. 115), then add the decimal (i.e. 11.5). This won't prevent all of the issues that may occur, but will help mitigate Unity's box panic.</AutoHuntNutritionTooltip>
+	<AutoHuntIncludeProducts>Include Products</AutoHuntIncludeProducts>
+	<AutoHuntIncludeProductsTooltip>Determines if the nutrition check should include animal products like milk, unfertilized eggs, and insect jelly.</AutoHuntIncludeProductsTooltip>
+	<AutoHuntRememberConfigs>Remember on Colony Move</AutoHuntRememberConfigs>
+	<AutoHuntRememberConfigsTooltip>Makes the manager attempt to remember managed animals and nutrition settings when the colony moves.\n\nThe colony usually only moves when abandoned and reformed, or through something like the gravship in Odyssey, and this setting is not going to do much if it doesn't move.</AutoHuntRememberConfigsTooltip>
+
+	<AutoHuntIncludeInsects>Include Insects</AutoHuntIncludeInsects>
+	<AutoHuntIncludeInsectsTooltip>Determines if insect meat, corpses, and hunt targets are included as part of the nutrition stockpile.</AutoHuntIncludeInsectsTooltip>
+	<AutoHuntIncludeHumanlike>Include Humanlikes</AutoHuntIncludeHumanlike>
+	<AutoHuntIncludeHumanlikeTooltip>Determines if humanlike meat and corpses are included as part of the nutrition stockpile.\n\nWild person hunts are not included, but if a humanlike is killed their corpse is counted.</AutoHuntIncludeHumanlikeTooltip>
+	<AutoHuntIncludeTwisted>Include Twisted</AutoHuntIncludeTwisted>
+	<AutoHuntIncludeTwistedTooltip>Determines if twisted flesh and corpses that give twisted flesh are included as part of the nutrition stockpile.</AutoHuntIncludeTwistedTooltip>
+
+	<!--Manage Display-->
 	<AutoHuntShow>Show</AutoHuntShow>
 	<AutoHuntHideAbsent>Hide Absent</AutoHuntHideAbsent>
 	<AutoHuntHideAbsentTooltip>Hide all wild animals not presently found on the map.\n\nThis does not alter any configurations, just what is shown in the manager. Hidden limits will act the same as before if new animals wander into the map.</AutoHuntHideAbsentTooltip>
@@ -12,31 +23,21 @@
 	<AutoHuntAll>All</AutoHuntAll>
 	<AutoHuntConfigured>Only Managed</AutoHuntConfigured>
 	<AutoHuntUnconfigured>Only Unmanaged</AutoHuntUnconfigured>
-	<AutoHuntDisplayCycle>This button can be used make the manager hide animals based on whether or not you have specified limits for the animal. Clicking the button cycles through All (no filter), Managed (at least one limit set), and Not Managed (no limits set).\n\nThis does not alter any configurations, just what is shown in the manager.</AutoHuntDisplayCycle>
+	<AutoHuntDisplayCycle>This button can be used make the manager hide animals based on whether or not you have specified limits for the animal. Clicking the button cycles through All (no filter), Managed (at least one limit set), and Unmanaged (no limits set).\n\nThis does not alter any configurations, just what is shown in the manager.</AutoHuntDisplayCycle>
+	<AutoHuntName>Name</AutoHuntName>
+	<AutoHuntNameTooltip>Limits the animals displayed to those with names containing whatever is in the text box. Clicking the X will clear the text box and reset the view.</AutoHuntNameTooltip>
 
 	<!--Lower section-->
+	<AutoHuntViewConfig>Manager Display</AutoHuntViewConfig>
+	<AutoHuntViewConfigTooltip>Alter what this window is showing you. None of these settings alter what the auto-hunt manager is doing, they just filters what actually gets shown on the animals list.</AutoHuntViewConfigTooltip>
+	<AutoHuntNutritionConfig>Nutrition Settings</AutoHuntNutritionConfig>
+	<AutoHuntNutritionConfigTooltip>Change how much nutrition the manager looks for and what type of corpses and raw meat are allowed (i.e. insects and humanlike)</AutoHuntNutritionConfigTooltip>
 	<AutoHuntRawFood>Corpses and Items</AutoHuntRawFood>
 	<AutoHuntPauseTooltip>This toggles whether or not the manager will do its periodic checks.</AutoHuntPauseTooltip>
 	<AutoHuntDoCheck>Check Food Now</AutoHuntDoCheck>
-	<AutoHuntDoCheckTooltip>Causes a stockpile check to happen immediately, potentially unforbidding corpses/raw meat if available or starting hunts if there isn't enough raw meat available. This acts the same as the periodic checks, but will not interrupt or delay those.\n\nIf you are finding that your hunters aren't keeping up with consumption, it is recommended that you increase the target nutrition.</AutoHuntDoCheckTooltip>
+	<AutoHuntDoCheckTooltip>Causes a stockpile check to happen immediately, potentially unforbidding corpses and raw meat if available or starting hunts if there isn't enough raw meat available. This acts the same as the periodic checks, but does not interrupt, delay, or rely on those.\n\nIf you are finding that your hunters aren't keeping up with consumption, it is recommended that you increase the target nutrition in the Nutrition Settings menu.</AutoHuntDoCheckTooltip>
 	<AutoHuntForget>Unforbid</AutoHuntForget>
-	<AutoHuntForgetTooltip>When an item is marked unforbidden or an animal is marked for hunting by the manager, it is put on a forbidden list within the manager to allow you to forbid it again/stop it from being hunted. This button allows you to make the manager forget some or all of the things on those lists.\n\nIf this button is grayed out, that means there is nothing in the manager forbidden list to forget. The manager will automatically clear its forbidden list of used/destroyed items and dead/missing animals periodically, so this button won't have any practical use in most cases.</AutoHuntForgetTooltip>
-
-
-	<AutoHuntNutritionTooltip>This is the amount of raw meat based nutrition the manager will try to make sure is available. If there isn't enough stockpiled or already marked for hunting, then a map-wide check will be made for new forbidden meat and corpses, and if there still isn't enough, animals will start being hunted. 7.5 nutrition is usually 2 stacks of meat.\n\nDue to how poorly Unity seems to handle boxes with non-whole numbers, any time you use a number with a decimal I recommend starting with the number without a decimal (i.e. 115), then add the decimal (i.e. 11.5). This won't prevent all of the issues that may occur, but will help mitigate Unity's box panic.</AutoHuntNutritionTooltip>
-	<AutoHuntIncludeProducts>Include Products</AutoHuntIncludeProducts>
-	<AutoHuntIncludeProductsTooltip>Determines if the nutrition check should include animal products like milk, unfertilized eggs, and insect jelly.</AutoHuntIncludeProductsTooltip>
-	<AutoHuntRememberConfigs>Remember Configs</AutoHuntRememberConfigs>
-	<AutoHuntRememberConfigsTooltip>Makes the manager attempt to remember its configs when the colony moves, usually through abandonment and reforming or by gravship for those with Odyssey. It is recommended that you double-check your configs when the new colony is made, as this can sometimes act strangely, especially if you have something that allows for multiple colonies.\n\nIf the colony never disbands and moves, this does nothing. This does not save the list between games, just between colony maps on the same game.</AutoHuntRememberConfigsTooltip>
-
-	<AutoHuntIncludeInsects>Include Insects</AutoHuntIncludeInsects>
-	<AutoHuntIncludeInsectsTooltip>Determines if insect meat, corpses, and hunt targets are included as part of the nutrition stockpile.</AutoHuntIncludeInsectsTooltip>
-	<AutoHuntIncludeHumanlike>Include Humanlikes</AutoHuntIncludeHumanlike>
-	<AutoHuntIncludeHumanlikeTooltip>Determines if humanlike meat and corpses are included as part of the nutrition stockpile.\n\nWild human hunts are not included, but if a humanlike is killed their corpse is counted.</AutoHuntIncludeHumanlikeTooltip>
-	<AutoHuntIncludeTwisted>Include Twisted</AutoHuntIncludeTwisted>
-	<AutoHuntIncludeTwistedTooltip>Determines if twisted flesh and corpses that give twisted flesh are included as part of the nutrition stockpile.</AutoHuntIncludeTwistedTooltip>
-
-
+	<AutoHuntForgetTooltip>When something is marked by the manager, it is put on a forbidden list within the manager to allow you to stop the hunt/forbid the item. This button allows you to make the manager forget some or all of the things on the list so it can be automatically marked again.</AutoHuntForgetTooltip>
 
 	<!--Main section-->
 	<ForceAutoHunt>Force</ForceAutoHunt>

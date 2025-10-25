@@ -10,11 +10,11 @@ namespace AutoHuntManager
         
         public override Vector2 InitialSize => new Vector2(325f, Height);
 
-        private float Height
+        public static float Height
         {
             get
             {
-                float h = 210f;
+                float h = 250f;
                 if (ModsConfig.AnomalyActive)
                     h += 40f;
                 return h;
@@ -48,23 +48,23 @@ namespace AutoHuntManager
                 xMin = nutLabel.xMax,
                 xMax = nutLabel.xMax + 60f
             };
-            float nut = huntWindow.Manager.curConfig.nutritionTarget;
+            float nut = huntWindow.Manager.config.nutritionTarget;
             var buffer = nut.ToString();
             Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer);
-            huntWindow.Manager.curConfig.nutritionTarget = nut;
+            huntWindow.Manager.config.nutritionTarget = nut;
             num++;
-            CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), ref huntWindow.Manager.curConfig.includeAnimalProducts);
-            CheckBox("AutoHuntIncludeInsects".Translate(), "AutoHuntIncludeInsectsTooltip".Translate(), ref huntWindow.Manager.curConfig.insectsAllow);
-            CheckBox("AutoHuntIncludeHumanlike".Translate(), "AutoHuntIncludeHumanlikeTooltip".Translate(), ref huntWindow.Manager.curConfig.humanlikeAllow);
+            CheckBox("AutoHuntIncludeProducts".Translate(), "AutoHuntIncludeProductsTooltip".Translate(), ref huntWindow.Manager.config.includeAnimalProducts);
+            CheckBox("AutoHuntIncludeInsects".Translate(), "AutoHuntIncludeInsectsTooltip".Translate(), ref huntWindow.Manager.config.insectsAllow);
+            CheckBox("AutoHuntIncludeHumanlike".Translate(), "AutoHuntIncludeHumanlikeTooltip".Translate(), ref huntWindow.Manager.config.humanlikeAllow);
             if (ModsConfig.AnomalyActive)
-                CheckBox("AutoHuntIncludeTwisted".Translate(), "AutoHuntIncludeTwistedTooltip".Translate(),  ref huntWindow.Manager.curConfig.twistedAllow);
-            
+                CheckBox("AutoHuntIncludeTwisted".Translate(), "AutoHuntIncludeTwistedTooltip".Translate(),  ref huntWindow.Manager.config.twistedAllow);
+            CheckBox("AutoHuntRememberConfigs".Translate(), "AutoHuntRememberConfigsTooltip".Translate(), ref huntWindow.Manager.save);
             Widgets.EndGroup();
             
             void CheckBox(string label, string tooltip, ref bool toggle, bool recalc = false)
             {
                 WidgetRow row = new WidgetRow(0f, 35f * num);
-                row.Label(label, viewRect.width - 30f, tooltip);
+                row.Label(label, viewRect.width - 40f, tooltip);
                 bool old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)

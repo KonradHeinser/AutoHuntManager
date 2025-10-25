@@ -5,7 +5,7 @@ namespace AutoHuntManager
     public class AutoHuntConfig : IExposable
     {
         public ThingDef animal;
-
+        
         public int maxTotal = -1;
 
         public int maxMales = -1;
