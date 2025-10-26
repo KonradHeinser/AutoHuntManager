@@ -180,14 +180,14 @@ namespace AutoHuntManager
             if (buttons.ButtonText(Manager.paused ? "Paused".Translate().CapitalizeFirst() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: width - 5f))
                 Manager.PauseToggle();
             buttons.Gap(5f);
+            if (buttons.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth: width))
+                Manager.DesignateHunting();
+            buttons.Gap(5f);
             if (Manager.Forgettable.NullOrEmpty())
                 GUI.color = Color.gray;
             if (buttons.ButtonText("AutoHuntForget".Translate(), "AutoHuntForgetTooltip".Translate(), true, true, !Manager.Forgettable.NullOrEmpty(), width - 5f))
                 Find.WindowStack.Add(new FloatMenu(Manager.Forgettable));
             GUI.color = color;
-            buttons.Gap(5f);
-            if (buttons.ButtonText("AutoHuntDoCheck".Translate(), "AutoHuntDoCheckTooltip".Translate(), fixedWidth: width))
-                Manager.DesignateHunting();
             buttons.Gap(5f);
             if (buttons.ButtonText("AutoHuntViewConfig".Translate(), "AutoHuntViewConfigTooltip".Translate(), fixedWidth: width))
                 Find.WindowStack.Add(new Dialog_AutoHuntWindowConfig(this));
@@ -337,7 +337,7 @@ namespace AutoHuntManager
             CurMaxPair("Females");
             CurMaxPair("FemalesYoung");
             widgetRow.Label("AutoSlaugtherHeaderColCurrent".Translate(), 60f, "AutoHuntHeaderTooltipCurrentPregnant".Translate());
-            widgetRow.Label("AllowHunt".Translate(), 56f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
+            widgetRow.Label("DesignatorHunt".Translate(), 56f, "AutoHuntHeaderTooltipAllowHuntPregnant".Translate());
             widgetRow.Label("ForceAutoHunt".Translate(), 62f, "AutoHuntHeaderTooltipForceHunt".Translate());
             Text.Anchor = anchor2;
             Widgets.EndGroup();

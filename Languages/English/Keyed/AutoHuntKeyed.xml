@@ -28,7 +28,7 @@
 	<AutoHuntNameTooltip>Limits the animals displayed to those with names containing whatever is in the text box. Clicking the X will clear the text box and reset the view.</AutoHuntNameTooltip>
 
 	<!--Lower section-->
-	<AutoHuntViewConfig>Manager Display</AutoHuntViewConfig>
+	<AutoHuntViewConfig>Manage Display</AutoHuntViewConfig>
 	<AutoHuntViewConfigTooltip>Alter what this window is showing you. None of these settings alter what the auto-hunt manager is doing, they just filters what actually gets shown on the animals list.</AutoHuntViewConfigTooltip>
 	<AutoHuntNutritionConfig>Nutrition Settings</AutoHuntNutritionConfig>
 	<AutoHuntNutritionConfigTooltip>Change how much nutrition the manager looks for and what type of corpses and raw meat are allowed (i.e. insects and humanlike)</AutoHuntNutritionConfigTooltip>
@@ -42,7 +42,6 @@
 	<!--Main section-->
 	<ForceAutoHunt>Force</ForceAutoHunt>
 	<AutoHuntHeaderTooltipForceHunt>Forces auto-hunt to always aim to hunt this animal down to the specified limits, regardless of current nutrition levels and target.\n\nThis may cause other auto hunted animals to be hunted less depending on food needed, but if the nutrition level is set high enough this setting does nothing.</AutoHuntHeaderTooltipForceHunt>
-	<AllowHunt>Hunt</AllowHunt>
 	<AutoHuntHeaderTooltipLabel>The animal to be automatically hunted.\n\nWhile force is not enabled for the animal, animals will be picked from this list from least to most dangerous.</AutoHuntHeaderTooltipLabel>
 	<AutoHuntHeaderTooltipCurrentTotal>The current number of wild animals, both male and female.\n\nAnimals that auto-hunt has marked previously but aren't currently marked for hunting are not included in this total.</AutoHuntHeaderTooltipCurrentTotal>
 	<AutoHuntHeaderTooltipMaxTotal>The maximum number of wild animals, both male and female.\n\nHunters will automatically hunt any extras from oldest to youngest, starting with adult males followed by non-pregnant adult females followed by juveniles.</AutoHuntHeaderTooltipMaxTotal>
