@@ -14,7 +14,7 @@ namespace AutoHuntManager
         {
             get
             {
-                float h = 250f;
+                var h = 250f;
                 if (ModsConfig.AnomalyActive)
                     h += 40f;
                 return h;
@@ -41,14 +41,14 @@ namespace AutoHuntManager
             var num = 0;
             var viewRect = inRect.ContractedBy(1f);
             Widgets.BeginGroup(viewRect);
-            WidgetRow nutrition = new WidgetRow(0f, 0f);
+            var nutrition = new WidgetRow(0f, 0f);
             var nutLabel = nutrition.Label("Nutrition".Translate(), viewRect.width - 70f, "AutoHuntNutritionTooltip".Translate());
             var nutFieldRect = new Rect(nutLabel)
             {
                 xMin = nutLabel.xMax,
                 xMax = nutLabel.xMax + 60f
             };
-            float nut = huntWindow.Manager.config.nutritionTarget;
+            var nut = huntWindow.Manager.config.nutritionTarget;
             var buffer = nut.ToString();
             Widgets.TextFieldNumeric<float>(nutFieldRect, ref nut, ref buffer);
             huntWindow.Manager.config.nutritionTarget = nut;
@@ -63,9 +63,9 @@ namespace AutoHuntManager
             
             void CheckBox(string label, string tooltip, ref bool toggle, bool recalc = false)
             {
-                WidgetRow row = new WidgetRow(0f, 35f * num);
+                var row = new WidgetRow(0f, 35f * num);
                 row.Label(label, viewRect.width - 40f, tooltip);
-                bool old = toggle;
+                var old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)
                     huntWindow.RecalculateAnimals();

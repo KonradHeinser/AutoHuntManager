@@ -64,19 +64,19 @@ namespace AutoHuntManager
                 huntWindow.RecalculateAnimals();
             });
 
-            Rect name = new Rect(viewRect);
+            var name = new Rect(viewRect);
             name.yMin += num * 35f + 3f;
             name.yMax = name.yMin + 25f;
             Widgets.Label(name, "AutoHuntName".Translate());
             TooltipHandler.TipRegion(name, "AutoHuntNameTooltip".Translate());
-            Rect search = new Rect(name)
+            var search = new Rect(name)
             {
                 xMin = viewRect.xMin + 113f,
                 xMax = viewRect.xMax - 32f
             };
             var nameSearch = huntWindow.nameSearch;
             nameSearch = Widgets.TextField(search, nameSearch);
-            Rect button = new Rect(search)
+            var button = new Rect(search)
             {
                 xMin = search.xMax + 5f,
                 xMax = viewRect.xMax - 1f
@@ -93,9 +93,9 @@ namespace AutoHuntManager
 
             void CheckBox(string label, string tooltip, ref bool toggle, bool recalc = false)
             {
-                WidgetRow row = new WidgetRow(0f, 35f * num);
+                var row = new WidgetRow(0f, 35f * num);
                 row.Label(label, viewRect.width - 40f, tooltip);
-                bool old = toggle;
+                var old = toggle;
                 Widgets.Checkbox(row.FinalX, row.FinalY, ref toggle, paintable: true);
                 if (recalc && toggle != old)
                     huntWindow.RecalculateAnimals();
@@ -104,7 +104,7 @@ namespace AutoHuntManager
 
             void Button(string label, string tooltip, string buttonText, Action action)
             {
-                WidgetRow row = new WidgetRow(0f, 35f * num);
+                var row = new WidgetRow(0f, 35f * num);
                 var labelWidth = Mathf.Min(viewRect.width - 50f, 110f);
                 row.Label(label, labelWidth, tooltip);
                 if (row.ButtonText(buttonText, tooltip, fixedWidth: viewRect.width - labelWidth - 20f))

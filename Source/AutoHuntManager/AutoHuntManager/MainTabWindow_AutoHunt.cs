@@ -77,7 +77,7 @@ namespace AutoHuntManager
             animalCounts.Clear();
             var animals = Find.CurrentMap.mapPawns.AllPawnsSpawned.Where(a => Manager.CanEverAutoHunt(a, true)).ToList();
 
-            foreach (AutoHuntConfig config in Manager.config.configs)
+            foreach (var config in Manager.config.configs)
             {
                 AnimalCountRecord value = default;
                 CountAnimals(animals, config, config.animal, out value.male, out value.maleYoung, out value.female, out value.femaleYoung, out value.total, out value.pregnant);
@@ -129,17 +129,17 @@ namespace AutoHuntManager
             if (Manager.forgettableDirty)
                 RecalculateAnimals();
 
-            Rect rect = new Rect(inRect);
+            var rect = new Rect(inRect);
             rect.yMax -= 45f;
             rect.yMin += 7f;
-            Listing_Standard listing_Standard = new Listing_Standard(rect, () => scrollPos)
+            var listing_Standard = new Listing_Standard(rect, () => scrollPos)
             {
                 ColumnWidth = inRect.width - 20f
             };
             viewRect = new Rect(0f, 0f, rect.width - 16f, 30f * (float)(configsOrdered.Count) + 48f);
             labelWidth = viewRect.width - 840f;
 
-            Rect other = new Rect(rect)
+            var other = new Rect(rect)
             {
                 x = scrollPos.x,
                 y = scrollPos.y
@@ -147,12 +147,12 @@ namespace AutoHuntManager
             Widgets.BeginScrollView(rect, ref scrollPos, viewRect);
             listing_Standard.Begin(viewRect);
             DoAnimalHeader(listing_Standard.GetRect(24f), listing_Standard.GetRect(24f));
-            int num = 0;
+            var num = 0;
             if (!configsOrdered.NullOrEmpty())
-                foreach (AutoHuntConfig item in configsOrdered)
+                foreach (var item in configsOrdered)
                 {
                     listing_Standard.Gap(6f);
-                    Rect rect2 = listing_Standard.GetRect(24f);
+                    var rect2 = listing_Standard.GetRect(24f);
                     if (rect2.Overlaps(other))
                         DoAnimalRow(rect2, item, num);
                     num++;
@@ -160,13 +160,13 @@ namespace AutoHuntManager
 
             listing_Standard.End();
             Widgets.EndScrollView();
-            Color color = GUI.color;
-            GameFont font = Text.Font;
-            TextAnchor anchor = Text.Anchor;
+            var color = GUI.color;
+            var font = Text.Font;
+            var anchor = Text.Anchor;
             Text.Anchor = (TextAnchor)3;
             GUI.color = Color.gray;
 
-            Rect lower = new Rect(rect)
+            var lower = new Rect(rect)
             {
                 yMin = inRect.yMax - 30f,
                 yMax = inRect.yMax
@@ -174,8 +174,8 @@ namespace AutoHuntManager
 
             GUI.color = color;
             Widgets.BeginGroup(lower);
-            WidgetRow buttons = new WidgetRow(0f, 0f);
-            float width = (lower.width - 110f) / 5f;
+            var buttons = new WidgetRow(0f, 0f);
+            var width = (lower.width - 110f) / 5f;
 
             if (buttons.ButtonText(Manager.paused ? "Paused".Translate().CapitalizeFirst() : "Searching".Translate(), "AutoHuntPauseTooltip".Translate(), fixedWidth: width - 5f))
                 Manager.PauseToggle();
@@ -216,7 +216,7 @@ namespace AutoHuntManager
                         break;
                     case Gender.Female when spawnedColonyAnimal.ageTracker.CurLifeStage.reproductive:
                     {
-                        Hediff firstHediffOfDef = spawnedColonyAnimal.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
+                        var firstHediffOfDef = spawnedColonyAnimal.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
                         if (firstHediffOfDef != null && firstHediffOfDef.Visible)
                         {
                             currentPregnant++;
@@ -241,7 +241,7 @@ namespace AutoHuntManager
 
         private void DoMaxColumn(WidgetRow row, ref int val, ref string buffer, int current)
         {
-            int num = val;
+            var num = val;
             if (val == -1)
             {
                 row.Gap(-4f);
@@ -277,8 +277,8 @@ namespace AutoHuntManager
         private void DoAnimalHeader(Rect rect1, Rect rect2)
         {
             Widgets.BeginGroup(new Rect(rect1.x, rect1.y, rect1.width, rect1.height + rect2.height + 1f));
-            int num = 0;
-            foreach (Rect tmpGroupRect in tmpGroupRects)
+            var num = 0;
+            foreach (var tmpGroupRect in tmpGroupRects)
             {
                 Widgets.DrawLightHighlight(tmpGroupRect);
                 if (num % 2 == 1) 
@@ -295,20 +295,20 @@ namespace AutoHuntManager
                 num++;
             }
 
-            foreach (Rect tmpMouseoverHighlightRect in tmpMouseoverHighlightRects)
+            foreach (var tmpMouseoverHighlightRect in tmpMouseoverHighlightRects)
                 Widgets.DrawHighlightIfMouseover(tmpMouseoverHighlightRect);
 
             Widgets.EndGroup();
             tmpMouseoverHighlightRects.Clear();
             tmpGroupRects.Clear();
             Widgets.BeginGroup(rect1);
-            WidgetRow row = new WidgetRow(0f, 0f);
-            TextAnchor anchor = Text.Anchor;
+            var row = new WidgetRow(0f, 0f);
+            var anchor = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             row.Label(string.Empty, 24f);
-            float startX = row.FinalX;
+            var startX = row.FinalX;
             row.Label(string.Empty, labelWidth, "AutoHuntHeaderTooltipLabel".Translate());
-            Rect item = new Rect(startX, rect1.height, row.FinalX - startX, rect2.height);
+            var item = new Rect(startX, rect1.height, row.FinalX - startX, rect2.height);
             tmpMouseoverHighlightRects.Add(item);
             tmpGroupRects.Add(item);
             AddCurrentAndMaxEntries("AutoSlaugtherHeaderColTotal");
@@ -317,17 +317,17 @@ namespace AutoHuntManager
             AddCurrentAndMaxEntries("AnimalFemaleAdult");
             AddCurrentAndMaxEntries("AnimalFemaleYoung");
             AddCurrentAndMaxEntries("AnimalPregnant");
-            float forceXStart = row.FinalX;
+            var forceXStart = row.FinalX;
             row.Label(string.Empty, 62f, "AutoHuntHeaderTooltipForceHunt".Translate());
-            Rect item2 = new Rect(forceXStart, rect1.height, row.FinalX - forceXStart, rect2.height);
+            var item2 = new Rect(forceXStart, rect1.height, row.FinalX - forceXStart, rect2.height);
             tmpMouseoverHighlightRects.Add(item2);
             tmpGroupRects.Add(item2);
 
             Text.Anchor = anchor;
             Widgets.EndGroup();
             Widgets.BeginGroup(rect2);
-            WidgetRow widgetRow = new WidgetRow(0f, 0f);
-            TextAnchor anchor2 = Text.Anchor;
+            var widgetRow = new WidgetRow(0f, 0f);
+            var anchor2 = Text.Anchor;
             Text.Anchor = (TextAnchor)4;
             widgetRow.Label(string.Empty, 24f);
             widgetRow.Label("AutoSlaugtherHeaderColLabel".Translate(), labelWidth, "AutoHuntHeaderTooltipLabel".Translate());
@@ -356,10 +356,10 @@ namespace AutoHuntManager
                 startX = row.FinalX;
                 row.Label(string.Empty, 60f);
                 tmpMouseoverHighlightRects.Add(new Rect(startX, rect1.height, row.FinalX - startX, rect2.height));
-                float finalX = row.FinalX;
+                var finalX = row.FinalX;
                 row.Label(string.Empty, 56f);
                 tmpMouseoverHighlightRects.Add(new Rect(finalX, rect1.height, row.FinalX - finalX, rect2.height));
-                Rect rect3 = new Rect(startX, 0f, row.FinalX - startX, rect2.height);
+                var rect3 = new Rect(startX, 0f, row.FinalX - startX, rect2.height);
                 Widgets.Label(rect3, headerKey.Translate());
                 tmpGroupRects.Add(rect3);
             }
@@ -370,10 +370,10 @@ namespace AutoHuntManager
             if (index % 2 == 1)
                 Widgets.DrawLightHighlight(rect);
 
-            Color color = GUI.color;
-            AnimalCountRecord animalCountRecord = animalCounts[config.animal];
+            var color = GUI.color;
+            var animalCountRecord = animalCounts[config.animal];
             Widgets.BeginGroup(rect);
-            WidgetRow row = new WidgetRow(0f, 0f);
+            var row = new WidgetRow(0f, 0f);
             row.DefIcon(config.animal);
             row.Gap(4f);
             GUI.color = ((animalCountRecord.total == 0) ? Color.gray : color);
@@ -392,7 +392,7 @@ namespace AutoHuntManager
             Text.Anchor = (TextAnchor)4;
             row.Label(animalCountRecord.pregnant.ToString(), 60f);
             Text.Anchor = (TextAnchor)0;
-            bool allowHuntPregnant = config.allowHuntPregnant;
+            var allowHuntPregnant = config.allowHuntPregnant;
             row.Gap(19f);
             Widgets.Checkbox(row.FinalX, 0f, ref config.allowHuntPregnant, paintable: true);
             if (allowHuntPregnant != config.allowHuntPregnant)
@@ -409,8 +409,8 @@ namespace AutoHuntManager
                 else if (limit.HasValue && limit != -1 && val > limit)
                     color2 = ColorLibrary.RedReadable;
 
-                Color color3 = GUI.color;
-                TextAnchor anchor = Text.Anchor;
+                var color3 = GUI.color;
+                var anchor = Text.Anchor;
                 Text.Anchor = (TextAnchor)4;
                 GUI.color = color2 ?? Color.white;
                 row.Label(val.ToString(), 60f);
@@ -420,7 +420,7 @@ namespace AutoHuntManager
 
             string GetTipForAnimal()
             {
-                TaggedString labelCap = config.animal.LabelCap;
+                var labelCap = config.animal.LabelCap;
                 if (Prefs.DevMode)
                     labelCap += "\n\nDEV: Animals to hunt:\n" + Manager.AnimalsToHunt.Where(x => x.def == config.animal).Select(DevTipPartForPawn).ToLineList("  - ");
 
@@ -429,8 +429,8 @@ namespace AutoHuntManager
             
             string DevTipPartForPawn(Pawn pawn)
             {
-                string text = pawn.LabelShortCap + " " + pawn.gender.GetLabel() + " (" + pawn.ageTracker.AgeBiologicalYears + "y)";
-                Hediff firstHediffOfDef = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
+                var text = pawn.LabelShortCap + " " + pawn.gender.GetLabel() + " (" + pawn.ageTracker.AgeBiologicalYears + "y)";
+                var firstHediffOfDef = pawn.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.Pregnant);
                 if (firstHediffOfDef != null)
                     text = text + ", pregnant (" + firstHediffOfDef.Severity.ToStringPercent() + ")";
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using Verse;
@@ -127,7 +128,7 @@ namespace AutoHuntManager
                         tmpAnimalsFemale.Clear();
                         tmpAnimalsFemaleYoung.Clear();
                         tmpAnimalsPregnant.Clear();
-                        foreach (Pawn spawnedAnimal in animals)
+                        foreach (var spawnedAnimal in animals)
                         {
                             if (spawnedAnimal.def != c.animal)
                                 continue;
@@ -177,7 +178,7 @@ namespace AutoHuntManager
                         if (c.maxMales != -1)
                             while (tmpAnimalsMale.Count > c.maxMales)
                             {
-                                Pawn a = tmpAnimalsMale.PopFront();
+                                var a = tmpAnimalsMale.PopFront();
                                 tmpAnimals.Remove(a);
                                 if (c.forceHunt)
                                     forcedAnimalsToHuntCached.Add(a);
@@ -189,7 +190,7 @@ namespace AutoHuntManager
                         {
                             while (tmpAnimalsFemale.Count > c.maxFemales)
                             {
-                                Pawn a = tmpAnimalsFemale.PopFront();
+                                var a = tmpAnimalsFemale.PopFront();
                                 tmpAnimals.Remove(a);
                                 if (c.forceHunt)
                                     forcedAnimalsToHuntCached.Add(a);
@@ -201,7 +202,7 @@ namespace AutoHuntManager
                         if (c.maxMalesYoung != -1)
                             while (tmpAnimalsMaleYoung.Count > c.maxMalesYoung)
                             {
-                                Pawn a = tmpAnimalsMaleYoung.PopFront();
+                                var a = tmpAnimalsMaleYoung.PopFront();
                                 tmpAnimals.Remove(a);
                                 if (c.forceHunt)
                                     forcedAnimalsToHuntCached.Add(a);
@@ -212,7 +213,7 @@ namespace AutoHuntManager
                         if (c.maxFemalesYoung != -1)
                             while (tmpAnimalsFemaleYoung.Count > c.maxFemalesYoung)
                             {
-                                Pawn a = tmpAnimalsFemaleYoung.PopFront();
+                                var a = tmpAnimalsFemaleYoung.PopFront();
                                 tmpAnimals.Remove(a);
                                 if (c.forceHunt)
                                     forcedAnimalsToHuntCached.Add(a);
@@ -225,17 +226,25 @@ namespace AutoHuntManager
 
                         while (tmpAnimals.Count > c.maxTotal)
                         {
-                            Pawn pawn = tmpAnimals.PopFront();
-                            if (pawn.gender == Gender.Male)
-                                if (pawn.ageTracker.CurLifeStage.reproductive)
+                            var pawn = tmpAnimals.PopFront();
+                            switch (pawn.gender)
+                            {
+                                case Gender.Male when pawn.ageTracker.CurLifeStage.reproductive:
                                     tmpAnimalsMale.Remove(pawn);
-                                else
+                                    break;
+                                case Gender.Male:
                                     tmpAnimalsMaleYoung.Remove(pawn);
-                            else if (pawn.gender == Gender.Female)
-                                if (pawn.ageTracker.CurLifeStage.reproductive)
+                                    break;
+                                case Gender.Female when pawn.ageTracker.CurLifeStage.reproductive:
                                     tmpAnimalsFemale.Remove(pawn);
-                                else
+                                    break;
+                                case Gender.Female:
                                     tmpAnimalsFemaleYoung.Remove(pawn);
+                                    break;
+                                case Gender.None:
+                                default:
+                                    break;
+                            }
 
                             if (c.forceHunt)
                                 forcedAnimalsToHuntCached.Add(pawn);
@@ -384,7 +393,7 @@ namespace AutoHuntManager
         protected void TryPopulateMissingAnimals()
         {
             var hashSet = new HashSet<ThingDef>(config.configs.Select(c => c.animal));
-            foreach (ThingDef allDef in DefDatabase<ThingDef>.AllDefs.Where(a => a.race?.Animal == true && !a.race.Dryad && !a.IsCorpse && !hashSet.Contains(a)))
+            foreach (var allDef in DefDatabase<ThingDef>.AllDefs.Where(a => a.race?.Animal == true && !a.race.Dryad && !a.IsCorpse && !hashSet.Contains(a)))
                 config.configs.Add(new AutoHuntConfig
                 {
                     animal = allDef
@@ -423,7 +432,7 @@ namespace AutoHuntManager
         public void DesignateHunting()
         {
             cacheDirty = true; // Dirty the cache so we can regenerate the list
-            float num = 0f; // Nutrition recorded
+            var num = 0f; // Nutrition recorded
 
             var hunting = map.mapPawns.AllPawnsSpawned.Where(a => a.IsAnimal && ValidPrey(a) &&
                 map.designationManager.DesignationOn(a)?.def == DesignationDefOf.Hunt);
@@ -468,8 +477,9 @@ namespace AutoHuntManager
 
             // Locate all viable corpses
             var corpses = map.listerThings.GetAllThings(f => f is Corpse c && 
-                c.InnerPawn.RaceProps.IsFlesh && ValidFood(f) &&
-                (config.twistedAllow || !c.InnerPawn.RaceProps.IsAnomalyEntity));
+                                                             c.GetRotStage() == RotStage.Fresh &&
+                                                            c.InnerPawn.RaceProps.IsFlesh && ValidFood(f) &&
+                                                            (config.twistedAllow || !c.InnerPawn.RaceProps.IsAnomalyEntity));
 
             // Check for claimed corpses that may be waiting for butchery
             var availableCorpses = corpses.Where(c => !c.IsForbidden(Faction.OfPlayer));
