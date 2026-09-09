@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
 using Verse;
@@ -465,7 +464,7 @@ namespace AutoHuntManager
                 (f.def.IsMeat || (config.includeAnimalProducts && (f.HasThingCategory(ThingCategoryDefOf.EggsUnfertilized) || f.HasThingCategory(AutoHuntDefOf.AnimalProductRaw)))) && 
                 (config.twistedAllow || !ModsConfig.AnomalyActive || f.def != ThingDefOf.Meat_Twisted));
 
-            // Start with counting all the meat laying around claimed because it's the easiest to handle
+            // Start with counting all the meat lying around claimed because it's the easiest to handle
             var availableMeat = rawMeat.Where(m => !m.IsForbidden(Faction.OfPlayer));
             if (!availableMeat.EnumerableNullOrEmpty())
                 foreach (var meat in availableMeat)
